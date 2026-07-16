@@ -1,0 +1,10 @@
+import torch
+import d2l
+# 打印PyTorch版本
+print("PyTorch版本：", torch.__version__)
+# 验证GPU是否成功启用
+print("GPU加速可用：", torch.cuda.is_available())
+# 额外：打印CUDA版本和GPU型号
+if torch.cuda.is_available():
+    print("CUDA版本：", torch.version.cuda)
+    print("GPU型号：", torch.cuda.get_device_name(0))
