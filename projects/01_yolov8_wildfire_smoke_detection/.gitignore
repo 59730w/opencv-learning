@@ -1,0 +1,24 @@
+# Dataset images and labels; keep the shareable dataset configuration.
+datasets/*
+!datasets/wildfire_smoke/
+datasets/wildfire_smoke/*
+!datasets/wildfire_smoke/data.yaml
+outputs/
+
+# Model weights and exported models
+*.pt
+*.pth
+*.onnx
+*.engine
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IDE settings
+.idea/
+.vscode/
+
+# Operating-system files
+.DS_Store
+Thumbs.db

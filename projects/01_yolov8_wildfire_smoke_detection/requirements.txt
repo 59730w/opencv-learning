@@ -1,0 +1,7 @@
+# Install a CUDA-compatible PyTorch build separately when GPU training is needed.
+ultralytics==8.4.116
+numpy==1.23.5
+opencv-python==4.11.0.86
+PyYAML==6.0.3
+matplotlib==3.7.2
+Pillow==11.3.0
