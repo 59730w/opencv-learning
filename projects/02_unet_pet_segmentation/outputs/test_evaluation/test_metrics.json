@@ -1,0 +1,13 @@
+{
+  "checkpoint": "D:\\DL_code\\d2l-zh\\unet_pet_segmentation\\outputs\\baseline\\best_model.pth",
+  "test_size": 3669,
+  "threshold": 0.5,
+  "global_dice": 0.9433804163027262,
+  "global_iou": 0.8928288201906058,
+  "mean_per_image_dice": 0.9362273491303855,
+  "median_per_image_dice": 0.9573026895523071,
+  "minimum_per_image_dice": 1.5258789240815696e-12,
+  "maximum_per_image_dice": 0.9957274198532104,
+  "mean_per_image_iou": 0.8881160130089326,
+  "median_per_image_iou": 0.9181021451950073
+}

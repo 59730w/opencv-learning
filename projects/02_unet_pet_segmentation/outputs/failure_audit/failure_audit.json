@@ -1,0 +1,153 @@
+{
+  "test_size": 3669,
+  "valid_foreground_range": [
+    0.01,
+    0.99
+  ],
+  "all_background_count": 7,
+  "near_background_count": 0,
+  "near_foreground_count": 1,
+  "all_background_samples": [
+    {
+      "index": 1093,
+      "filename": "Egyptian_Mau_20.jpg",
+      "mask_filename": "Egyptian_Mau_20.png",
+      "foreground_ratio": 0.0,
+      "dice": 2.8327809410418037e-12,
+      "iou": 2.8327809410418037e-12
+    },
+    {
+      "index": 1690,
+      "filename": "japanese_chin_199.jpg",
+      "mask_filename": "japanese_chin_199.png",
+      "foreground_ratio": 0.0,
+      "dice": 1.930129318660625e-12,
+      "iou": 1.930129318660625e-12
+    },
+    {
+      "index": 1858,
+      "filename": "keeshond_7.jpg",
+      "mask_filename": "keeshond_7.png",
+      "foreground_ratio": 0.0,
+      "dice": 1.59395571990756e-12,
+      "iou": 1.59395571990756e-12
+    },
+    {
+      "index": 2292,
+      "filename": "Persian_259.jpg",
+      "mask_filename": "Persian_259.png",
+      "foreground_ratio": 0.0,
+      "dice": 1.5258789062476717e-12,
+      "iou": 1.5258789062476717e-12
+    },
+    {
+      "index": 2837,
+      "filename": "saint_bernard_60.jpg",
+      "mask_filename": "saint_bernard_60.png",
+      "foreground_ratio": 0.0,
+      "dice": 1.225039813778941e-11,
+      "iou": 1.225039813778941e-11
+    },
+    {
+      "index": 2856,
+      "filename": "saint_bernard_78.jpg",
+      "mask_filename": "saint_bernard_78.png",
+      "foreground_ratio": 0.0,
+      "dice": 3.695764653693193e-12,
+      "iou": 3.695764653693193e-12
+    },
+    {
+      "index": 3473,
+      "filename": "wheaten_terrier_195.jpg",
+      "mask_filename": "wheaten_terrier_195.png",
+      "foreground_ratio": 0.0,
+      "dice": 8.400537634338033e-12,
+      "iou": 8.400537634338033e-12
+    }
+  ],
+  "near_background_samples": [],
+  "near_foreground_samples": [
+    {
+      "index": 1862,
+      "filename": "keeshond_83.jpg",
+      "mask_filename": "keeshond_83.png",
+      "foreground_ratio": 0.999359130859375,
+      "dice": 0.98978899308984,
+      "iou": 0.9797844077320369
+    }
+  ],
+  "worst_valid_samples": [
+    {
+      "index": 2107,
+      "filename": "miniature_pinscher_33.jpg",
+      "mask_filename": "miniature_pinscher_33.png",
+      "foreground_ratio": 0.174102783203125,
+      "dice": 8.764241892999436e-12,
+      "iou": 8.764241892999436e-12
+    },
+    {
+      "index": 521,
+      "filename": "Bengal_30.jpg",
+      "mask_filename": "Bengal_30.png",
+      "foreground_ratio": 0.0641021728515625,
+      "dice": 0.06405529956073606,
+      "iou": 0.03308736017536093
+    },
+    {
+      "index": 2005,
+      "filename": "Maine_Coon_268.jpg",
+      "mask_filename": "Maine_Coon_268.png",
+      "foreground_ratio": 0.23980712890625,
+      "dice": 0.11848470493788887,
+      "iou": 0.06297302246236729
+    },
+    {
+      "index": 2302,
+      "filename": "Persian_268.jpg",
+      "mask_filename": "Persian_268.png",
+      "foreground_ratio": 0.4146728515625,
+      "dice": 0.22366780506420603,
+      "iou": 0.12591552734508377
+    },
+    {
+      "index": 2308,
+      "filename": "Persian_273.jpg",
+      "mask_filename": "Persian_273.png",
+      "foreground_ratio": 0.7763214111328125,
+      "dice": 0.27641164558388814,
+      "iou": 0.1603698730481562
+    },
+    {
+      "index": 701,
+      "filename": "Bombay_204.jpg",
+      "mask_filename": "Bombay_204.png",
+      "foreground_ratio": 0.0869140625,
+      "dice": 0.3726613464042761,
+      "iou": 0.2290004883638735
+    },
+    {
+      "index": 2154,
+      "filename": "miniature_pinscher_76.jpg",
+      "mask_filename": "miniature_pinscher_76.png",
+      "foreground_ratio": 0.084991455078125,
+      "dice": 0.37649721777443645,
+      "iou": 0.23190426398011033
+    },
+    {
+      "index": 158,
+      "filename": "american_bulldog_63.jpg",
+      "mask_filename": "american_bulldog_63.png",
+      "foreground_ratio": 0.2491455078125,
+      "dice": 0.4020466315867592,
+      "iou": 0.2516009788117572
+    },
+    {
+      "index": 980,
+      "filename": "British_Shorthair_96.jpg",
+      "mask_filename": "British_Shorthair_96.png",
+      "foreground_ratio": 0.1822509765625,
+      "dice": 0.41100323624726026,
+      "iou": 0.2586558044827201
+    }
+  ]
+}
