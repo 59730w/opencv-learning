@@ -1,0 +1,151 @@
+{
+  "checkpoint": "checkpoints/resnet18_baseline/best.pt",
+  "checkpoint_epoch": 13,
+  "checkpoint_stage": "finetune",
+  "preprocessing": "Resize(256), CenterCrop(224), ImageNet normalization",
+  "external_images": 26,
+  "positive": {
+    "images": 20,
+    "top1_correct": 1,
+    "top1_accuracy": 0.05,
+    "top3_correct": 4,
+    "top3_accuracy": 0.2,
+    "by_view": {
+      "closeup": {
+        "images": 10,
+        "top1_correct": 1,
+        "top1_accuracy": 0.1,
+        "top3_correct": 2,
+        "top3_accuracy": 0.2
+      },
+      "wider_trunk": {
+        "images": 10,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 2,
+        "top3_accuracy": 0.2
+      }
+    },
+    "by_class": {
+      "Anacardium occidentale": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 1,
+        "top3_accuracy": 0.5
+      },
+      "Artocarpus heterophyllus": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Carica papaya": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Cocos nucifera": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Delonix regia": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Hevea brasiliensis": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Psidium guajava": {
+        "images": 2,
+        "top1_correct": 1,
+        "top1_accuracy": 0.5,
+        "top3_correct": 2,
+        "top3_accuracy": 1.0
+      },
+      "Tamarindus indica": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Tectona grandis": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Terminalia catappa": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 1,
+        "top3_accuracy": 0.5
+      }
+    }
+  },
+  "negative": {
+    "images": 6,
+    "confidence_ge_0_8": 0,
+    "mean_top1_confidence": 0.5470870484908422,
+    "max_top1_confidence": 0.7020846009254456,
+    "forced_predictions": [
+      {
+        "filename": "negative_forest_01.jpg",
+        "negative_type": "forest",
+        "predicted_class": "Melia azedarach",
+        "confidence": 0.7020846009254456
+      },
+      {
+        "filename": "negative_leaf_01.jpg",
+        "negative_type": "leaf",
+        "predicted_class": "Artocarpus altilis",
+        "confidence": 0.6344957947731018
+      },
+      {
+        "filename": "negative_flower_01.jpg",
+        "negative_type": "flower",
+        "predicted_class": "Artocarpus altilis",
+        "confidence": 0.3459077775478363
+      },
+      {
+        "filename": "negative_fruit_01.jpg",
+        "negative_type": "fruit",
+        "predicted_class": "Wrightia religiosa",
+        "confidence": 0.520548403263092
+      },
+      {
+        "filename": "negative_rock_01.jpg",
+        "negative_type": "rock",
+        "predicted_class": "Nephelium lappaceum",
+        "confidence": 0.5420413613319397
+      },
+      {
+        "filename": "negative_wood_01.jpg",
+        "negative_type": "wood",
+        "predicted_class": "Artocarpus altilis",
+        "confidence": 0.5374443531036377
+      }
+    ]
+  },
+  "limitations": [
+    "The classifier is closed-set and must assign every negative image to one of 50 classes.",
+    "The fixed external set was not used for training, checkpoint selection, or parameter tuning.",
+    "Twenty positive images are a small diagnostic sample, not a population-level benchmark."
+  ]
+}

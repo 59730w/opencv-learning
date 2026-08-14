@@ -1,0 +1,134 @@
+{
+  "experiment_type": "post-hoc exploratory inference optimization",
+  "strict_external_test": false,
+  "reason": "Five-crop averaging was designed after observing the fixed external baseline.",
+  "checkpoint_epoch": 13,
+  "method": "Resize shortest side to 256, take FiveCrop(224), average crop softmax probabilities",
+  "validation": {
+    "images": 844,
+    "accuracy": 0.9845971563981043,
+    "macro_f1": 0.9828267277375983
+  },
+  "external_baseline_center_crop": {
+    "images": 20,
+    "top1_correct": 1,
+    "top1_accuracy": 0.05,
+    "top3_correct": 4,
+    "top3_accuracy": 0.2,
+    "by_view": {
+      "closeup": {
+        "images": 10,
+        "top1_correct": 1,
+        "top1_accuracy": 0.1,
+        "top3_correct": 2,
+        "top3_accuracy": 0.2
+      },
+      "wider_trunk": {
+        "images": 10,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 2,
+        "top3_accuracy": 0.2
+      }
+    },
+    "by_class": {
+      "Anacardium occidentale": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 1,
+        "top3_accuracy": 0.5
+      },
+      "Artocarpus heterophyllus": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Carica papaya": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Cocos nucifera": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Delonix regia": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Hevea brasiliensis": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Psidium guajava": {
+        "images": 2,
+        "top1_correct": 1,
+        "top1_accuracy": 0.5,
+        "top3_correct": 2,
+        "top3_accuracy": 1.0
+      },
+      "Tamarindus indica": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Tectona grandis": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 0,
+        "top3_accuracy": 0.0
+      },
+      "Terminalia catappa": {
+        "images": 2,
+        "top1_correct": 0,
+        "top1_accuracy": 0.0,
+        "top3_correct": 1,
+        "top3_accuracy": 0.5
+      }
+    }
+  },
+  "external_multicrop": {
+    "images": 26,
+    "positive": {
+      "images": 20,
+      "top1_correct": 2,
+      "top1_accuracy": 0.1,
+      "top3_correct": 3,
+      "top3_accuracy": 0.15,
+      "by_view": {
+        "closeup": {
+          "images": 10,
+          "top1_correct": 2,
+          "top3_correct": 2
+        },
+        "wider_trunk": {
+          "images": 10,
+          "top1_correct": 0,
+          "top3_correct": 1
+        }
+      }
+    },
+    "negative": {
+      "images": 6,
+      "confidence_ge_0_8": 0,
+      "max_top1_confidence": 0.6696885824203491
+    }
+  }
+}

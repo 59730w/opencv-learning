@@ -1,0 +1,27 @@
+﻿filename,test_type,expected_class,view_type,top1_index,top1_class,top1_confidence,top1_correct,top2_index,top2_class,top2_confidence,top3_index,top3_class,top3_confidence,expected_in_top3
+positive_01_01.jpg,positive,Anacardium occidentale,closeup,0,Acacia,0.2951306402683258,False,19,Erythrina fusca,0.27348485589027405,44,Tamarindus indica,0.23947134613990784,False
+positive_01_02.jpg,positive,Anacardium occidentale,wider_trunk,33,Musa,0.8089520335197449,False,5,Artocarpus altilis,0.09488572925329208,3,Anacardium occidentale,0.02417903020977974,True
+positive_02_01.jpg,positive,Artocarpus heterophyllus,closeup,36,Polyalthia longifolia,0.6559618711471558,False,24,Hevea brasiliensis,0.2392616719007492,29,Magnolia alba,0.04375400394201279,False
+positive_02_02.jpg,positive,Artocarpus heterophyllus,wider_trunk,37,Prunnus,0.7547017931938171,False,26,Khaya senegalensis,0.155437633395195,13,Citrus aurantiifolia,0.03522900119423866,False
+positive_03_01.jpg,positive,Carica papaya,closeup,0,Acacia,0.7273257374763489,False,22,Ficus racemosa,0.13193947076797485,15,Cocos nucifera,0.08883985877037048,False
+positive_03_02.jpg,positive,Carica papaya,wider_trunk,39,Psidium guajava,0.670415461063385,False,13,Citrus aurantiifolia,0.21765202283859253,2,Adenium species,0.06970176845788956,False
+positive_04_01.jpg,positive,Cocos nucifera,closeup,6,Artocarpus heterophyllus,0.3003396689891815,False,26,Khaya senegalensis,0.1724705696105957,12,Chrysophyllum cainino,0.1645725518465042,False
+positive_04_02.jpg,positive,Cocos nucifera,wider_trunk,32,Melia azedarach,0.18047787249088287,False,13,Citrus aurantiifolia,0.14730174839496613,30,Mangifera,0.13204042613506317,False
+positive_05_01.jpg,positive,Delonix regia,closeup,37,Prunnus,0.2842467427253723,False,34,Nephelium lappaceum,0.18861092627048492,49,Wrightia religiosa,0.13907299935817719,False
+positive_05_02.jpg,positive,Delonix regia,wider_trunk,20,Eucalyptus,0.39701080322265625,False,39,Psidium guajava,0.1897452175617218,6,Artocarpus heterophyllus,0.06380544602870941,False
+positive_06_01.jpg,positive,Hevea brasiliensis,closeup,5,Artocarpus altilis,0.7899719476699829,False,32,Melia azedarach,0.10412897914648056,15,Cocos nucifera,0.03373976796865463,False
+positive_06_02.jpg,positive,Hevea brasiliensis,wider_trunk,33,Musa,0.39369451999664307,False,4,Annona squamosa,0.3641079068183899,38,Prunus salicina,0.06265757977962494,False
+positive_07_01.jpg,positive,Psidium guajava,closeup,39,Psidium guajava,0.7855392098426819,True,13,Citrus aurantiifolia,0.10594841837882996,33,Musa,0.05682097375392914,True
+positive_07_02.jpg,positive,Psidium guajava,wider_trunk,33,Musa,0.7750396132469177,False,39,Psidium guajava,0.21882355213165283,5,Artocarpus altilis,0.0033749842550605536,True
+positive_08_01.jpg,positive,Tamarindus indica,closeup,0,Acacia,0.9423184990882874,False,5,Artocarpus altilis,0.025069057941436768,15,Cocos nucifera,0.024825433269143105,False
+positive_08_02.jpg,positive,Tamarindus indica,wider_trunk,5,Artocarpus altilis,0.4882276952266693,False,33,Musa,0.15468144416809082,46,Terminalia catappa,0.11494949460029602,False
+positive_09_01.jpg,positive,Tectona grandis,closeup,46,Terminalia catappa,0.9204205274581909,False,33,Musa,0.045914627611637115,5,Artocarpus altilis,0.01654817722737789,False
+positive_09_02.jpg,positive,Tectona grandis,wider_trunk,34,Nephelium lappaceum,0.5341261625289917,False,33,Musa,0.264411598443985,36,Polyalthia longifolia,0.07985730469226837,False
+positive_10_01.jpg,positive,Terminalia catappa,closeup,0,Acacia,0.47145143151283264,False,46,Terminalia catappa,0.20757725834846497,16,Dalbergia oliveri,0.12060670554637909,True
+positive_10_02.jpg,positive,Terminalia catappa,wider_trunk,30,Mangifera,0.804294764995575,False,6,Artocarpus heterophyllus,0.04004347696900368,24,Hevea brasiliensis,0.02667471021413803,False
+negative_forest_01.jpg,negative,,forest,32,Melia azedarach,0.7020846009254456,,15,Cocos nucifera,0.09670180082321167,33,Musa,0.09102053940296173,
+negative_leaf_01.jpg,negative,,leaf,5,Artocarpus altilis,0.6344957947731018,,33,Musa,0.18178609013557434,49,Wrightia religiosa,0.046686530113220215,
+negative_flower_01.jpg,negative,,flower,5,Artocarpus altilis,0.3459077775478363,,32,Melia azedarach,0.27203693985939026,39,Psidium guajava,0.18991237878799438,
+negative_fruit_01.jpg,negative,,fruit,49,Wrightia religiosa,0.520548403263092,,39,Psidium guajava,0.4353594481945038,5,Artocarpus altilis,0.021548638120293617,
+negative_rock_01.jpg,negative,,rock,34,Nephelium lappaceum,0.5420413613319397,,22,Ficus racemosa,0.39734122157096863,0,Acacia,0.0588579885661602,
+negative_wood_01.jpg,negative,,wood,5,Artocarpus altilis,0.5374443531036377,,15,Cocos nucifera,0.3274920582771301,33,Musa,0.08572392165660858,

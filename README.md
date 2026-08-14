@@ -24,6 +24,7 @@
 
 - [01｜YOLOv8 森林烟雾检测](projects/01_yolov8_wildfire_smoke_detection/)：完成环境检查、预训练推理、COCO8 冒烟训练、自定义数据训练、测试集评估、外部图片推理和错误分析。
 - [02｜U-Net 宠物语义分割](projects/02_unet_pet_segmentation/)：基于 Oxford-IIIT Pet 数据集，完成标签检查、同步预处理、冒烟测试、小样本过拟合、U-Net 训练、Dice/IoU 评估、失败案例审计和外部图片泛化测试。
+- [03｜BarkVN-50 树皮树种分类](projects/03_forest_species_classification/)：完成 OpenCV 数据审计、相似组划分、ResNet18 迁移学习、Accuracy/Macro-F1 评估、错误分析、严格外部测试、单图推理和 Gradio Demo。
 
 ---
 

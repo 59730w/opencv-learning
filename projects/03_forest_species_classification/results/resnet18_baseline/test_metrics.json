@@ -1,0 +1,11 @@
+{
+  "checkpoint": "checkpoints/resnet18_baseline/best.pt",
+  "checkpoint_epoch": 13,
+  "checkpoint_stage": "finetune",
+  "test_images": 823,
+  "correct_predictions": 807,
+  "incorrect_predictions": 16,
+  "test_loss": 0.08802743484226495,
+  "test_accuracy": 0.9805589307411907,
+  "test_macro_f1": 0.9789708352372489
+}

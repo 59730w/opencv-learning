@@ -1,0 +1,29 @@
+{
+  "eligible_images": 5558,
+  "class_count": 50,
+  "minimum_class_count": 80,
+  "maximum_class_count": 239,
+  "thresholds": {
+    "brightness_low_p1": 89.20341,
+    "brightness_high_p99": 161.346929,
+    "contrast_low_p1": 32.425684000000004,
+    "blur_low_p1": 246.499825
+  },
+  "size_counts": {
+    "303x404": 4394,
+    "245x327": 1159,
+    "315x223": 1,
+    "399x215": 1,
+    "374x200": 1,
+    "339x215": 1,
+    "306x191": 1
+  },
+  "outlier_image_count": 217,
+  "outlier_reason_counts": {
+    "very_bright": 56,
+    "very_dark": 56,
+    "uncommon_size": 5,
+    "low_contrast": 56,
+    "low_laplacian_variance": 56
+  }
+}

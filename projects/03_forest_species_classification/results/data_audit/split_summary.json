@@ -1,0 +1,280 @@
+{
+  "seed": 42,
+  "total_images": 5558,
+  "class_count": 50,
+  "total_groups": 5189,
+  "target_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "image_counts": {
+    "train": 3891,
+    "test": 823,
+    "validation": 844
+  },
+  "image_ratios": {
+    "train": 0.700071968333933,
+    "validation": 0.15185318459877653,
+    "test": 0.1480748470672904
+  },
+  "group_counts": {
+    "train": 3612,
+    "validation": 793,
+    "test": 784
+  },
+  "group_leakage_count": 0,
+  "classes_missing_a_split": 0,
+  "per_class_split_counts": {
+    "Acacia": {
+      "train": 72,
+      "test": 15,
+      "validation": 15
+    },
+    "Adenanthera microsperma": {
+      "train": 56,
+      "validation": 12,
+      "test": 12
+    },
+    "Adenium species": {
+      "train": 101,
+      "validation": 22,
+      "test": 21
+    },
+    "Anacardium occidentale": {
+      "train": 167,
+      "test": 36,
+      "validation": 36
+    },
+    "Annona squamosa": {
+      "train": 73,
+      "test": 16,
+      "validation": 16
+    },
+    "Artocarpus altilis": {
+      "train": 73,
+      "test": 15,
+      "validation": 16
+    },
+    "Artocarpus heterophyllus": {
+      "train": 96,
+      "validation": 21,
+      "test": 21
+    },
+    "Barringtonia acutangula": {
+      "validation": 15,
+      "train": 72,
+      "test": 15
+    },
+    "Cananga odorata": {
+      "train": 71,
+      "validation": 15,
+      "test": 15
+    },
+    "Carica papaya": {
+      "train": 145,
+      "validation": 31,
+      "test": 31
+    },
+    "Casuarina equisetifolia": {
+      "validation": 15,
+      "train": 68,
+      "test": 14
+    },
+    "Cedrus": {
+      "validation": 14,
+      "train": 65,
+      "test": 14
+    },
+    "Chrysophyllum cainino": {
+      "train": 78,
+      "test": 16,
+      "validation": 17
+    },
+    "Citrus aurantiifolia": {
+      "validation": 16,
+      "train": 76,
+      "test": 16
+    },
+    "Citrus grandis": {
+      "train": 59,
+      "test": 12,
+      "validation": 13
+    },
+    "Cocos nucifera": {
+      "test": 16,
+      "validation": 17,
+      "train": 77
+    },
+    "Dalbergia oliveri": {
+      "test": 13,
+      "validation": 14,
+      "train": 62
+    },
+    "Delonix regia": {
+      "train": 65,
+      "test": 14,
+      "validation": 14
+    },
+    "Dipterocarpus alatus": {
+      "train": 110,
+      "validation": 24,
+      "test": 24
+    },
+    "Erythrina fusca": {
+      "train": 73,
+      "validation": 16,
+      "test": 15
+    },
+    "Eucalyptus": {
+      "test": 19,
+      "train": 89,
+      "validation": 19
+    },
+    "Ficus microcarpa": {
+      "train": 105,
+      "test": 22,
+      "validation": 23
+    },
+    "Ficus racemosa": {
+      "train": 82,
+      "validation": 18,
+      "test": 17
+    },
+    "Gmelina arborea Roxb": {
+      "validation": 16,
+      "train": 72,
+      "test": 15
+    },
+    "Hevea brasiliensis": {
+      "train": 77,
+      "test": 16,
+      "validation": 17
+    },
+    "Hopea": {
+      "validation": 14,
+      "train": 64,
+      "test": 13
+    },
+    "Khaya senegalensis": {
+      "train": 67,
+      "test": 14,
+      "validation": 14
+    },
+    "Khaya senegalensis A.Juss": {
+      "test": 15,
+      "train": 69,
+      "validation": 15
+    },
+    "Lagerstroemia speciosa": {
+      "train": 67,
+      "test": 14,
+      "validation": 15
+    },
+    "Magnolia alba": {
+      "train": 64,
+      "validation": 14,
+      "test": 14
+    },
+    "Mangifera": {
+      "train": 64,
+      "test": 14,
+      "validation": 14
+    },
+    "Melaleuca": {
+      "validation": 16,
+      "train": 75,
+      "test": 16
+    },
+    "Melia azedarach": {
+      "train": 72,
+      "validation": 16,
+      "test": 15
+    },
+    "Musa": {
+      "train": 92,
+      "validation": 20,
+      "test": 20
+    },
+    "Nephelium lappaceum": {
+      "train": 73,
+      "validation": 16,
+      "test": 15
+    },
+    "Persea": {
+      "train": 72,
+      "validation": 16,
+      "test": 15
+    },
+    "Polyalthia longifolia": {
+      "train": 70,
+      "test": 15,
+      "validation": 15
+    },
+    "Prunnus": {
+      "train": 56,
+      "test": 12,
+      "validation": 12
+    },
+    "Prunus salicina": {
+      "train": 73,
+      "test": 16,
+      "validation": 16
+    },
+    "Psidium guajava": {
+      "validation": 18,
+      "train": 86,
+      "test": 18
+    },
+    "Pterocarpus macrocarpus": {
+      "train": 70,
+      "validation": 15,
+      "test": 15
+    },
+    "Senna siamea": {
+      "validation": 14,
+      "train": 65,
+      "test": 14
+    },
+    "Spondias mombin L": {
+      "train": 72,
+      "test": 15,
+      "validation": 15
+    },
+    "Syzygium nervosum": {
+      "test": 16,
+      "train": 76,
+      "validation": 17
+    },
+    "Tamarindus indica": {
+      "train": 72,
+      "test": 15,
+      "validation": 16
+    },
+    "Tectona grandis": {
+      "validation": 15,
+      "train": 72,
+      "test": 15
+    },
+    "Terminalia catappa": {
+      "train": 72,
+      "test": 15,
+      "validation": 16
+    },
+    "Veitchia merrilli": {
+      "train": 106,
+      "validation": 23,
+      "test": 23
+    },
+    "Wrightia": {
+      "train": 68,
+      "validation": 15,
+      "test": 14
+    },
+    "Wrightia religiosa": {
+      "validation": 15,
+      "train": 70,
+      "test": 15
+    }
+  }
+}

@@ -1,0 +1,17 @@
+﻿true_index,true_class,predicted_index,predicted_class,count
+17,Delonix regia,16,Dalbergia oliveri,1
+18,Dipterocarpus alatus,25,Hopea,1
+20,Eucalyptus,19,Erythrina fusca,1
+20,Eucalyptus,16,Dalbergia oliveri,1
+22,Ficus racemosa,6,Artocarpus heterophyllus,1
+25,Hopea,48,Wrightia,1
+28,Lagerstroemia speciosa,41,Senna siamea,1
+28,Lagerstroemia speciosa,19,Erythrina fusca,1
+31,Melaleuca,16,Dalbergia oliveri,1
+40,Pterocarpus macrocarpus,10,Casuarina equisetifolia,1
+41,Senna siamea,44,Tamarindus indica,1
+45,Tectona grandis,30,Mangifera,1
+45,Tectona grandis,41,Senna siamea,1
+45,Tectona grandis,18,Dipterocarpus alatus,1
+46,Terminalia catappa,20,Eucalyptus,1
+48,Wrightia,16,Dalbergia oliveri,1

@@ -1,0 +1,21 @@
+{
+  "eligible_images": 5558,
+  "candidate_pair_count": 623,
+  "total_groups_including_singletons": 5189,
+  "non_singleton_similarity_groups": 205,
+  "cross_class_similarity_groups": 0,
+  "largest_group_size": 16,
+  "group_size_distribution": {
+    "1": 4984,
+    "2": 136,
+    "3": 33,
+    "4": 17,
+    "5": 3,
+    "6": 7,
+    "7": 4,
+    "8": 2,
+    "9": 2,
+    "16": 1
+  },
+  "split_rule": "All images with the same group_id must be assigned to the same train, validation or test split."
+}

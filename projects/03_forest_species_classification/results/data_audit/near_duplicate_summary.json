@@ -1,0 +1,10 @@
+{
+  "eligible_images": 5558,
+  "total_pair_comparisons": 15442903,
+  "phash_threshold": 6,
+  "dhash_threshold": 6,
+  "candidate_pair_count": 623,
+  "same_class_candidate_pairs": 623,
+  "cross_class_candidate_pairs": 0,
+  "decision": "Candidates require visual review; no automatic exclusion."
+}
