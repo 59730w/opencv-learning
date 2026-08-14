@@ -263,6 +263,14 @@ python scripts/train_baseline.py
 outputs/baseline/best_model.pth
 ```
 
+已训练权重可从 GitHub Release 下载：
+
+- 文件：[project02-unet-pet-segmentation-best_model.pth](https://github.com/59730w/opencv-learning/releases/download/model-weights-v1.0.0/project02-unet-pet-segmentation-best_model.pth)
+- 大小：57,424,756 字节（54.76 MiB）
+- SHA-256：`64AAAA97BB3A9393B2A0ECE76EAA1A37543CA3D2C8247201B506632BFD16D7A3`
+
+下载后将文件保存为 `outputs/baseline/best_model.pth`，即可运行测试集评估和外部图片预测脚本。权重通过 Release 分发，不进入 Git 历史。
+
 ### 5. 测试集评估
 
 ```bash

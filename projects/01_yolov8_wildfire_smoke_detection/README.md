@@ -52,7 +52,7 @@ yolov8_wildfire_smoke_detection/
     └── experiment_log.md
 ```
 
-数据集图片与标签、`outputs/` 和模型权重已通过 `.gitignore` 排除，不会提交到 GitHub；用于说明目录和类别的 `data.yaml` 会保留。
+数据集图片与标签、`outputs/` 和模型权重已通过 `.gitignore` 排除，不进入 Git 历史；用于说明目录和类别的 `data.yaml` 会保留，最佳权重通过 GitHub Release 单独发布。
 
 ## 运行环境
 
@@ -107,6 +107,14 @@ python scripts/08_predict_custom.py
 ```text
 outputs/wildfire_train/weights/best.pt
 ```
+
+### 下载已训练权重
+
+- 文件：[project01-yolov8-wildfire-smoke-best.pt](https://github.com/59730w/opencv-learning/releases/download/model-weights-v1.0.0/project01-yolov8-wildfire-smoke-best.pt)
+- 大小：6,236,835 字节（5.95 MiB）
+- SHA-256：`0694D67026415C4B07E05158015BEB5FF6E5F07ABBAB23F27B4A11DD83AE3485`
+
+下载后将文件保存为 `outputs/wildfire_train/weights/best.pt`，即可运行评估和自定义图片预测脚本。
 
 ## Baseline 设置
 

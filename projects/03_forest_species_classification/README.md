@@ -50,7 +50,7 @@
 └── tests/                  # 自动化测试
 ```
 
-原始数据集、完整运行输出、外部测试原图和模型权重不纳入 Git 仓库。
+原始数据集、完整运行输出、外部测试原图和模型权重不纳入 Git 历史；最佳权重通过 GitHub Release 单独发布。
 
 ## 环境
 
@@ -119,7 +119,13 @@ python scripts/visualize_misclassified_images.py
 checkpoints/resnet18_baseline/best.pt
 ```
 
-模型权重未上传；运行单图推理或 Gradio Demo 前，需要先完成训练，或自行把兼容检查点放到上述位置。
+已训练权重可从 GitHub Release 下载：
+
+- 文件：[project03-forest-species-resnet18-best.pt](https://github.com/59730w/opencv-learning/releases/download/model-weights-v1.0.0/project03-forest-species-resnet18-best.pt)
+- 大小：44,881,412 字节（42.80 MiB）
+- SHA-256：`3249A29748E8ECF6C733D11D9560C0BD6347FA5CD123E06FDDCA272578669DCE`
+
+下载后将文件保存为 `checkpoints/resnet18_baseline/best.pt`，即可运行单图推理或 Gradio Demo。权重通过 Release 分发，不进入 Git 历史。
 
 ## 外部测试
 
