@@ -95,9 +95,15 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 | 学习内容 | 学习重点 | 资源推荐 |
 |---|---|---|
 | C++ 基础 | 指针、引用、STL、智能指针 | 黑马程序员 C++（B 站） |
-| OpenCV C++ | 将第一阶段的 Python 代码用 C++ 重写一遍 | 贾志刚 C++ 版 |
+| OpenCV C++ | 复用已掌握的视觉算法，重点学习 `cv::Mat` 内存语义、C++ 接口设计和工程化 | 贾志刚 C++ 版 + OpenCV 官方文档 |
 | CMake | 必须掌握，所有嵌入式项目的标配 | CMake 官方教程 |
 | 编译流程 | `gcc`/`g++`、交叉编译概念 | 搜索“交叉编译入门” |
+
+**当前进度（2026-08-17）：**
+
+- Day44：完成 MSYS2 UCRT64、CMake/Ninja、OpenCV 5 工具链和首个 C++ OpenCV 程序。
+- Day45：完成真实图片 I/O、HighGUI、`cv::Mat` 浅/深拷贝、`const cv::Mat&` 和退出码验收。
+- 后续不重复 Day1～Day15 的 Python OpenCV 基础操作，转向 C++17、STL、CMake、调试和部署能力。
 
 ---
 
