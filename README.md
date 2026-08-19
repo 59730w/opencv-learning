@@ -1,4 +1,4 @@
-# 研 0 完整学习路线图
+﻿# 研 0 完整学习路线图
 
 > 从 Python、OpenCV 与深度学习入门，逐步过渡到 C++、嵌入式平台，并在入学后切入导师研究方向。
 
@@ -104,6 +104,7 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 - Day44：完成 MSYS2 UCRT64、CMake/Ninja、OpenCV 5 工具链和首个 C++ OpenCV 程序。
 - Day45：完成真实图片 I/O、HighGUI、`cv::Mat` 浅/深拷贝、`const cv::Mat&` 和退出码验收。
 - Day46：完成 C++17 `std::filesystem` 目录遍历、`cv::imread` 批量读取与单文件失败隔离、`struct`+`std::vector` 结果汇总和退出码验收。
+- Day47：完成批量图像处理与结果落盘——`cv::cvtColor` 灰度转换、`cv::imwrite` 落盘、读/写双重失败隔离、`create_directories` 输出目录管理。
 - 后续不重复 Day1～Day15 的 Python OpenCV 基础操作，转向 C++17、STL、CMake、调试和部署能力。
 
 ---
