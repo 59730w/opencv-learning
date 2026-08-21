@@ -99,13 +99,14 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 | CMake | 必须掌握，所有嵌入式项目的标配 | CMake 官方教程 |
 | 编译流程 | `gcc`/`g++`、交叉编译概念 | 搜索“交叉编译入门” |
 
-**当前进度（2026-08-20）：**
+**当前进度（2026-08-21）：**
 
 - Day44：完成 MSYS2 UCRT64、CMake/Ninja、OpenCV 5 工具链和首个 C++ OpenCV 程序。
 - Day45：完成真实图片 I/O、HighGUI、`cv::Mat` 浅/深拷贝、`const cv::Mat&` 和退出码验收。
 - Day46：完成 C++17 `std::filesystem` 目录遍历、`cv::imread` 批量读取与单文件失败隔离、`struct`+`std::vector` 结果汇总和退出码验收。
 - Day47：完成批量图像处理与结果落盘——`cv::cvtColor` 灰度转换、`cv::imwrite` 落盘、读/写双重失败隔离、`create_directories` 输出目录管理。
 - Day48：完成 `std::unique_ptr` / `std::shared_ptr` 所有权练习，并将批处理器升级为支持 `--op gray|blur|edge` 的可配置处理管线，完成自动契约测试和退出码验收。
+- Day49：完成 Debug 构建、GDB 源码断点/变量/调用栈与受控异常定位，并使用 `objdump`、`where.exe` 和 `info sharedlibrary` 分析 Windows 运行时 DLL 依赖。
 - 后续不重复 Day1～Day15 的 Python OpenCV 基础操作，转向 C++17、STL、CMake、调试和部署能力。
 
 ---

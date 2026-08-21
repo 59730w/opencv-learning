@@ -1,0 +1,22 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "msys2-ucrt64-debug",
+      "displayName": "MSYS2 UCRT64 + OpenCV 5 (Debug)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "$env{MSYS2_ROOT}/ucrt64/bin/g++.exe",
+        "OpenCV_DIR": "$env{MSYS2_ROOT}/ucrt64/lib/cmake/opencv5"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "msys2-ucrt64-debug",
+      "configurePreset": "msys2-ucrt64-debug"
+    }
+  ]
+}
