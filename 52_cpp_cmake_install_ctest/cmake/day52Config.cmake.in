@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(OpenCV 5 REQUIRED COMPONENTS core imgcodecs imgproc)
+find_dependency(Threads REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/day52Targets.cmake")
+
+check_required_components(day52)
