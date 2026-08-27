@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "lesson": "Day55 ONNX Runtime C++ CPU inference benchmark",
+  "claim_scope": "Controlled performance experiment only; no accuracy, external-generalization, GPU, TensorRT, quantization, or embedded claim.",
+  "build_configuration": "Release",
+  "execution_provider": "CPU",
+  "graph_optimization": "ORT_ENABLE_ALL",
+  "opencv_threads": 1,
+  "execution_configs": [
+    {
+      "name": "intra_1",
+      "intra_op_num_threads": 1,
+      "inter_op_num_threads": 1,
+      "execution_mode": "ORT_SEQUENTIAL"
+    },
+    {
+      "name": "intra_default",
+      "intra_op_num_threads": 0,
+      "inter_op_num_threads": 1,
+      "execution_mode": "ORT_SEQUENTIAL"
+    }
+  ],
+  "batch_sizes": [1, 3, 6],
+  "warmup_runs": 3,
+  "measured_runs": 10,
+  "statistics": {
+    "reported": ["min_ms", "median_ms", "p90_ms", "max_ms", "mean_ms_per_image", "images_per_second"],
+    "median": "Average the two middle values after sorting 10 measurements.",
+    "p90": "Nearest-rank method: sorted value at one-based rank ceil(0.90 * n)."
+  },
+  "session_lifecycle": {
+    "create_once_per_process": true,
+    "session_creation_timed_separately": true,
+    "session_creation_excluded_from_benchmark_modes": true
+  },
+  "timing_modes": {
+    "runtime_only": {
+      "includes": ["Ort::Session::Run with an already prepared tensor"],
+      "excludes": ["path discovery", "image decode", "preprocessing", "session creation", "Top-k", "console output", "CSV output"]
+    },
+    "end_to_end": {
+      "includes": ["cv::imread", "OpenCV preprocessing", "batch tensor assembly", "Ort::Session::Run", "Top-k extraction"],
+      "excludes": ["path discovery", "session creation", "console output", "CSV output"]
+    }
+  },
+  "correctness_gate": {
+    "all_logits_finite": true,
+    "expected_output_shape": "[batch, 50]",
+    "maximum_absolute_logit_difference_vs_day54": 0.000001,
+    "top1_equal_vs_day54": true,
+    "ordered_top3_equal_vs_day54": true,
+    "required_before_speed_claim": true
+  },
+  "raw_output": "outputs/day55_benchmark_raw.csv",
+  "summary_output": "outputs/day55_benchmark_summary.csv",
+  "success_markers": ["DAY55_BENCHMARK_CONTRACT_OK", "DAY55_BENCHMARK_OK"]
+}

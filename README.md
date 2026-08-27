@@ -99,7 +99,7 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 | CMake | 必须掌握，所有嵌入式项目的标配 | CMake 官方教程 |
 | 编译流程 | `gcc`/`g++`、交叉编译概念 | 搜索“交叉编译入门” |
 
-**当前进度（2026-08-26）：**
+**当前进度（2026-08-27）：**
 
 - Day44：完成 MSYS2 UCRT64、CMake/Ninja、OpenCV 5 工具链和首个 C++ OpenCV 程序。
 - Day45：完成真实图片 I/O、HighGUI、`cv::Mat` 浅/深拷贝、`const cv::Mat&` 和退出码验收。
@@ -112,7 +112,8 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 - Day52：使用 CTest 统一运行 C++ 单元测试和 PowerShell 契约测试，完成 CMake 安装、导出 `day52::pipeline`、独立消费者验证与 CPack 开发包检查。
 - Day53：将森林树种 ResNet18 从 PyTorch 检查点导出为动态批次 ONNX，使用 ONNX Runtime 对 batch=1/2/3 的真实图片进行数值与 Top-k 一致性验证，并记录 PyTorch 2.5 Dynamo 动态导出的兼容性边界。
 - Day54：在 MSVC/CMake 中接入 ONNX Runtime 1.19.2 与 OpenCV 4.10.0，完成模型接口检查、C++ 预处理、动态 batch=1/3 推理、类别映射和 Top-k 输出；四项 CTest 全部通过，并将同张量运行时一致性与 OpenCV/PIL 端到端预处理差异分开验收。
-- 后续不重复 Day1～Day15 的 Python OpenCV 基础操作；Day55 先在正确性等价门通过的基础上学习 C++ 推理基准测试，再逐步衔接量化、硬件后端与嵌入式部署。
+- Day55：完成 ONNX Runtime C++ CPU 受控性能基准，严格区分纯 `Session::Run` 与端到端计时，比较 batch=1/3/6 和 ORT 默认/单线程配置，保留120条原始测量与12组汇总，并通过回归测试修正计时边界和 Session 创建时间留存问题。
+- 后续不重复 Day1～Day15 的 Python OpenCV 基础操作；继续在正确性等价门通过的前提下学习模型优化、硬件后端与嵌入式部署。
 
 ---
 
