@@ -1,0 +1,30 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "msvc-x64-release",
+      "displayName": "MSVC x64 + ONNX Runtime CPU profiling (Release)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON",
+        "ONNXRUNTIME_ROOT": "$env{ONNXRUNTIME_ROOT}",
+        "OpenCV_DIR": "$env{DAY56_OPENCV_DIR}",
+        "Python3_EXECUTABLE": "$env{DAY56_PYTHON}"
+      }
+    }
+  ],
+  "buildPresets": [
+    {"name": "msvc-x64-release", "configurePreset": "msvc-x64-release", "configuration": "Release"}
+  ],
+  "testPresets": [
+    {
+      "name": "msvc-x64-release",
+      "configurePreset": "msvc-x64-release",
+      "configuration": "Release",
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error"}
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "lesson": "Day56 ONNX Runtime C++ operator profiling",
+  "claim_scope": "Diagnostic CPU profiling only; profiling durations are not Day55 benchmark replacements and make no accuracy, external-generalization, GPU, TensorRT, quantization, or embedded claim.",
+  "build_configuration": "Release",
+  "execution_provider": "CPUExecutionProvider",
+  "graph_optimization": "ORT_ENABLE_ALL",
+  "opencv_threads": 1,
+  "warmup_policy": {"runs": 3, "separate_non_profiled_session": true},
+  "profiled_runs": 10,
+  "execution_mode": "ORT_SEQUENTIAL",
+  "inter_op_num_threads": 1,
+  "execution_configs": [
+    {"name": "batch1_default", "batch_size": 1, "intra_op_num_threads": 0},
+    {"name": "batch6_default", "batch_size": 6, "intra_op_num_threads": 0},
+    {"name": "batch6_single", "batch_size": 6, "intra_op_num_threads": 1}
+  ],
+  "profile_analysis": {
+    "operator_events": "cat == Node and args.op_name plus args.provider are present; zero-duration fence events without a provider are excluded",
+    "duration_unit": "microseconds",
+    "group_by": ["op_name", "provider"],
+    "reported": ["event_count", "total_duration_us", "mean_duration_us", "share_percent"]
+  },
+  "correctness_gate": {
+    "all_logits_finite": true,
+    "expected_output_shape": "[batch, 50]",
+    "maximum_absolute_logit_difference_vs_day54": 0.000001,
+    "ordered_top3_equal_vs_day54": true
+  },
+  "generated_outputs": "outputs/ (ignored by Git)",
+  "success_markers": ["DAY56_PROFILING_API_OK", "DAY56_PROFILING_OK", "DAY56_PROFILE_ANALYSIS_OK", "DAY56_PROFILING_CONTRACT_OK"]
+}
