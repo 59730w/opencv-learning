@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "lesson": "Day57 ONNX Runtime static INT8 post-training quantization",
+  "claim_scope": "CPU deployment optimization experiment only; quantization does not repair the baseline model's known external-generalization and open-set failures.",
+  "reference_model": {
+    "path": "../53_pytorch_onnx_export/artifacts/forest_species_resnet18.onnx",
+    "size_bytes": 44802759,
+    "sha256": "9403c2db6abec8a851fc96bc0053951a9bd3dc79d1d1fa82dab4089d7b23bc8c",
+    "input": "images [batch,3,224,224] float32",
+    "output": "logits [batch,50] float32",
+    "conv_nodes": 20,
+    "gemm_nodes": 1
+  },
+  "quantization": {
+    "method": "static post-training quantization",
+    "format": "QDQ",
+    "activation_type": "QInt8",
+    "weight_type": "QInt8",
+    "per_channel_weights": true,
+    "calibration_method": "MinMax",
+    "op_types": ["Conv", "Gemm"]
+  },
+  "calibration": {
+    "manifest_split": "train",
+    "selection": "first 4 relative paths per class after deterministic class_index/relative_path ordering",
+    "classes": 50,
+    "images_per_class": 4,
+    "total_images": 200,
+    "forbidden_splits": ["validation", "test", "external"]
+  },
+  "quality_gate": {
+    "validation_accuracy_drop_max": 0.01,
+    "validation_macro_f1_drop_max": 0.01,
+    "required_before_test_external_and_performance": true,
+    "external_set_never_used_for_selection": true
+  },
+  "performance": {
+    "profiling_enabled": false,
+    "timing_boundary": "Day55 runtime-only Session::Run",
+    "batch_sizes": [1, 6],
+    "intra_op_threads": 0,
+    "warmup_runs": 3,
+    "measured_runs": 10,
+    "speedup_not_required": true
+  },
+  "generated_outputs": "artifacts/ and outputs/ are ignored by Git",
+  "success_markers": [
+    "DAY57_QUANTIZATION_API_OK",
+    "DAY57_CALIBRATION_SPLIT_OK",
+    "DAY57_QUANTIZATION_CONTRACT_OK",
+    "DAY57_STATIC_INT8_OK",
+    "DAY57_INTERNAL_QUALITY_GATE_OK",
+    "DAY57_EXTERNAL_COMPARISON_OK",
+    "DAY57_BENCHMARK_OK"
+  ]
+}
