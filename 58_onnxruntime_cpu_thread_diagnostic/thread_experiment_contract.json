@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "lesson": "Day58 ONNX Runtime CPU intra-op thread diagnostic",
+  "question": "Does ONNX Runtime default intra-op threading sufficiently explain the Day57 QDQ S8S8 INT8 runtime-only slowdown on this machine?",
+  "claim_scope": "Controlled diagnostic on one Intel i5-11400H Windows CPU with ONNX Runtime 1.19.2 CPUExecutionProvider; no universal INT8, CPU, accuracy, external-generalization, GPU, or embedded claim.",
+  "hardware": {
+    "cpu": "11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz",
+    "logical_processors": 12
+  },
+  "runtime": {
+    "onnxruntime": "1.19.2",
+    "execution_provider": "CPUExecutionProvider",
+    "benchmark_implementation": "../55_onnxruntime_cpp_benchmark/build/Release/day55_benchmark.exe",
+    "execution_mode": "ORT_SEQUENTIAL",
+    "graph_optimization": "ORT_ENABLE_ALL"
+  },
+  "independent_variable": {
+    "name": "intra_op_num_threads",
+    "values": [0, 1],
+    "meaning": {
+      "0": "ONNX Runtime default intra-op configuration",
+      "1": "explicit single intra-op thread"
+    }
+  },
+  "fixed_variables": {
+    "inter_op_num_threads": 1,
+    "opencv_threads": 1,
+    "timing_boundary": "runtime-only Session::Run",
+    "profiling_enabled": false,
+    "warmup_runs": 5,
+    "measured_runs": 30,
+    "batch_sizes": [1, 6],
+    "models": ["fp32", "int8_qdq_s8s8"],
+    "input_set": "the same six tracked Day55 images in the same order"
+  },
+  "matrix_cell_count": 8,
+  "correctness_gate": {
+    "same_model_across_thread_settings": [
+      "same logit shape",
+      "all logits finite",
+      "ordered Top-3 equal for every image"
+    ],
+    "required_before_timing_interpretation": true
+  },
+  "interpretation_rule": {
+    "practical_improvement_margin": 0.02,
+    "full_support": "For both batches, single-thread INT8-vs-FP32 speedup is at least 1.0 and improves by at least 2% relative to default.",
+    "partial_support": "At least one batch improves INT8-vs-FP32 speedup by at least 2%, but full_support is not met.",
+    "not_supported": "Neither batch improves INT8-vs-FP32 speedup by at least 2%.",
+    "note": "Partial or absent support does not identify which untested kernel, graph, instruction, or conversion mechanism is responsible."
+  },
+  "recorded_result": "results/day58_benchmark_snapshot.json is the tracked quantitative snapshot; reruns in outputs/ must reproduce gates and direction, not identical milliseconds",
+  "generated_outputs": "outputs/ is ignored by Git",
+  "success_markers": [
+    "DAY58_CONTRACT_OK",
+    "DAY58_CORRECTNESS_OK",
+    "DAY58_THREAD_EXPERIMENT_OK"
+  ]
+}

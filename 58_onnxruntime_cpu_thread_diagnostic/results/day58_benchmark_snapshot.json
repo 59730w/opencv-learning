@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "recorded_date": "2026-08-30",
+  "hardware": "11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz, 12 logical processors",
+  "runtime": "ONNX Runtime 1.19.20240830.5.ffceed9 CPUExecutionProvider",
+  "timing_boundary": "runtime-only Session::Run",
+  "warmup_runs_per_cell": 5,
+  "measured_runs_per_cell": 30,
+  "matrix_cell_count": 8,
+  "raw_timing_count": 240,
+  "results": [
+    {"model": "fp32", "batch_size": 1, "intra_threads": 0, "median_ms": "8.547450", "p90_ms": "9.957200", "images_per_second": "123.302586", "speedup_vs_fp32_same_threads": "1.000000000"},
+    {"model": "int8", "batch_size": 1, "intra_threads": 0, "median_ms": "10.440050", "p90_ms": "11.151300", "images_per_second": "97.559294", "speedup_vs_fp32_same_threads": "0.818717343"},
+    {"model": "int8", "batch_size": 1, "intra_threads": 1, "median_ms": "24.772800", "p90_ms": "25.064200", "images_per_second": "40.304005", "speedup_vs_fp32_same_threads": "1.119524236"},
+    {"model": "fp32", "batch_size": 1, "intra_threads": 1, "median_ms": "27.733750", "p90_ms": "28.216400", "images_per_second": "35.642288", "speedup_vs_fp32_same_threads": "1.000000000"},
+    {"model": "int8", "batch_size": 6, "intra_threads": 0, "median_ms": "54.450050", "p90_ms": "57.636200", "images_per_second": "110.669342", "speedup_vs_fp32_same_threads": "0.829399606"},
+    {"model": "fp32", "batch_size": 6, "intra_threads": 0, "median_ms": "45.160850", "p90_ms": "53.835200", "images_per_second": "137.084629", "speedup_vs_fp32_same_threads": "1.000000000"},
+    {"model": "fp32", "batch_size": 6, "intra_threads": 1, "median_ms": "163.207350", "p90_ms": "164.886400", "images_per_second": "36.710848", "speedup_vs_fp32_same_threads": "1.000000000"},
+    {"model": "int8", "batch_size": 6, "intra_threads": 1, "median_ms": "146.071250", "p90_ms": "147.751200", "images_per_second": "40.788229", "speedup_vs_fp32_same_threads": "1.117313297"}
+  ],
+  "by_batch": {
+    "1": {"default_int8_speedup_vs_fp32": 0.8187173433077428, "single_thread_int8_speedup_vs_fp32": 1.119524236259123, "relative_speedup_improvement": 0.36741238647281427},
+    "6": {"default_int8_speedup_vs_fp32": 0.8293996056936588, "single_thread_int8_speedup_vs_fp32": 1.117313297449019, "relative_speedup_improvement": 0.34713507189886705}
+  },
+  "interpretation": "full_support",
+  "correctness": "Same-model logits across intra-op 0/1 had zero maximum absolute difference and identical ordered Top-3 for batch 1 and 6."
+}

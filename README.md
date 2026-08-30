@@ -99,7 +99,7 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 | CMake | 必须掌握，所有嵌入式项目的标配 | CMake 官方教程 |
 | 编译流程 | `gcc`/`g++`、交叉编译概念 | 搜索“交叉编译入门” |
 
-**当前进度（2026-08-29）：**
+**当前进度（2026-08-30）：**
 
 - Day44：完成 MSYS2 UCRT64、CMake/Ninja、OpenCV 5 工具链和首个 C++ OpenCV 程序。
 - Day45：完成真实图片 I/O、HighGUI、`cv::Mat` 浅/深拷贝、`const cv::Mat&` 和退出码验收。
@@ -115,6 +115,7 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 - Day55：完成 ONNX Runtime C++ CPU 受控性能基准，严格区分纯 `Session::Run` 与端到端计时，比较 batch=1/3/6 和 ORT 默认/单线程配置，保留120条原始测量与12组汇总，并通过回归测试修正计时边界和 Session 创建时间留存问题。
 - Day56：完成 ONNX Runtime C++ Profiling，使用独立预热 Session 和3组受控配置定位 CPU 算子热点，过滤 Session/fence 事件并汇总带 Provider 的 Node 事件；两项 CTest 通过，Batch6 两种线程配置相对 Day54 的 logits 误差为0且有序 Top-3一致，确认当前主要热点是卷积算子。
 - Day57：完成 ONNX Runtime QDQ S8S8 静态 INT8 量化，使用训练集200张均衡图片校准；模型缩小74.719%，validation/test Accuracy 与 Macro-F1 下降均小于1个百分点，但受控 C++ CPU 基准显示 Batch1/6 均慢于 FP32，因此仅保留为体积压缩实验，不宣称加速或泛化改善。
+- Day58：用预注册的单变量实验比较 ORT 默认/单线程下 FP32 与 QDQ S8S8 INT8 的 Batch1/6 性能；240条 runtime-only 计时和跨线程输出一致性表明，默认并行对FP32的收益显著高于INT8，足以解释本机上的相对慢速，但显式单线程使两种模型绝对延迟均恶化数倍，因此不是部署优化，也不改变外部泛化与开放集失败结论。
 - 后续不重复 Day1～Day15 的 Python OpenCV 基础操作；继续在正确性等价门通过的前提下学习模型优化、硬件后端与嵌入式部署。
 
 ---
