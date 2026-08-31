@@ -1,0 +1,31 @@
+schema_version: 1
+project_id: 04_crop_row_perception
+updated: 2026-08-31
+
+entries:
+  - id: day59_open_source_review
+    role: background_reference
+    status: AVAILABLE
+    path: docs/open_source_baseline_review.md
+    allowed_use: 任务设计、基线选择、指标与失败条件定义
+    forbidden_use: 不得作为本项目性能、泛化或部署效果的证据
+
+  - id: id_development_data
+    role: id_development
+    status: NOT_AVAILABLE
+    planned_gate: Day60 data_viability
+
+  - id: ood_development_data
+    role: ood_development
+    status: NOT_AVAILABLE
+    planned_gate: Day60 data_viability
+
+  - id: frozen_external_test
+    role: frozen_external_test
+    status: NOT_AVAILABLE
+    planned_gate: Day60 只确认候选来源和独立性；实际使用前冻结
+
+  - id: robot_control_evidence
+    role: real_robot_control
+    status: NOT_AVAILABLE
+    note: 明确不在本项目声明范围内

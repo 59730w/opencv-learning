@@ -1,0 +1,141 @@
+schema_version: 1
+
+project:
+  id: 04_crop_row_perception
+  name_zh: 农业机器人作物行视觉感知学习项目
+  task_type: monocular_rgb_crop_row_geometry_estimation
+  deadline: 2026-09-11
+
+gate:
+  name: target_contract
+  verdict: PASS
+  decision_date: 2026-08-31
+  confirmation: 用户在了解 Day59-Day70 方案后，明确授权自动完成 Day59 全部步骤。
+  pass_reason: 任务、输入、输出、支持与拒绝条件、指标、阈值、证据角色、硬件目标和截止日期均已具体定义。
+
+intended_claim:
+  allowed: >-
+    在公开的、带标注的前视单目 RGB 农田图像或视频帧上，学习并评估作物行/中央可通行走廊的图像平面几何估计，
+    输出归一化中心偏移、航向角、置信度和拒绝状态。
+  prohibited:
+    - 不宣称可以直接控制真实机器人。
+    - 不宣称像素偏移等于米制横向误差。
+    - 不宣称在未测试的作物、相机、天气、夜间或遮挡条件下可靠。
+    - 不把同一数据源的留出集称为独立外部测试。
+
+input:
+  modality: monocular_rgb
+  unit: image_or_video_frame
+  target_view: 地面农业机器人前视相机视角
+  canonical_evaluation_size: [640, 360]
+  coordinate_normalization: 使用各自图像宽高归一化，算法不得依赖固定像素尺寸。
+
+output_contract:
+  coordinate_system:
+    pixel_origin: top_left
+    pixel_x_positive: right
+    pixel_y_positive: down
+    normalized_x: x_px / (width - 1)
+    normalized_y: y_px / (height - 1)
+    normalized_range: [0.0, 1.0]
+    camera_center_x_norm: 0.5
+  required_fields:
+    - centerline_points_norm
+    - lateral_offset_norm
+    - heading_error_deg
+    - confidence
+    - status
+  lateral_offset_norm:
+    formula: x_near_norm - 0.5
+    sign: 正值表示目标中心线在相机中心右侧，负值表示在左侧。
+    limitation: 仅为图像平面归一化偏移，不是米制横向误差。
+  heading_error_deg:
+    formula: degrees(atan2(x_far_norm - x_near_norm, y_near_norm - y_far_norm))
+    sign: 从近点指向远点时，正值表示中心线朝图像右上方，负值表示朝左上方。
+    limitation: 是相对图像竖直轴的局部方向代理；Day64 后只有在标定证据充分时才讨论物理坐标。
+  confidence:
+    range: [0.0, 1.0]
+    rule: 必须由可记录的几何一致性、植被支持度和时序稳定性组成；不得把未经验证的任意分数称为概率。
+  status:
+    enum: [valid, degraded, reject]
+    meanings:
+      valid: 几何结果满足全部有效性检查，可进入离线评价。
+      degraded: 有可解释结果但至少一个质量条件较弱，只能展示并记录。
+      reject: 无可靠走廊、输入不受支持或几何自相矛盾，不输出可用导航误差。
+
+target_conditions:
+  supported:
+    - 白天、前视单目 RGB、相机位置基本固定。
+    - 至少中央相邻作物行或中央可通行走廊可见。
+    - 直行和中等弯曲作物行。
+    - 晴天、阴天、局部阴影、稀疏或较密杂草、局部断行。
+  negative_or_unknown:
+    - 到达地头、转弯区或画面中不存在可定义中央走廊。
+    - 夜间、严重运动模糊、过曝、完全遮挡或相机姿态异常。
+    - 普通道路车道、室内、非农田画面以及不可辨认输入。
+    - 超出数据覆盖的作物种类、生长阶段、相机或地区。
+
+failure_costs:
+  highest: 把无可靠走廊的帧错误标记为 valid，产生貌似可信的方向输出。
+  medium: 中心偏移或航向角方向/数值错误。
+  lower: 对实际可用帧保守地输出 degraded 或 reject。
+  policy: 宁可拒绝，也不输出高置信度但几何不一致的结果。
+
+metrics_and_thresholds:
+  - id: bottom_position_mae_norm
+    definition: 预测与真值中心线在近端评价横线处的横向绝对误差除以图像宽度。
+    threshold: "<= 0.05"
+  - id: heading_mae_deg
+    definition: 预测与真值中心线局部方向的平均绝对角度误差。
+    threshold: "<= 5.0"
+  - id: supported_valid_recall
+    definition: 受支持且有可靠真值的帧中输出 valid 的比例。
+    threshold: ">= 0.85"
+  - id: unsafe_false_valid_rate
+    definition: 应拒绝帧中错误输出 valid 的比例。
+    threshold: "<= 0.05"
+  - id: runtime_median_ms
+    definition: 当前笔记本 CPU、640x360、单帧端到端处理的中位耗时。
+    threshold: "<= 50.0"
+
+acceptance_rules:
+  internal_gate:
+    rule: 所有绝对阈值、主要困难组支持和拒绝行为同时通过，才能冻结算法与阈值。
+  frozen_external_gate:
+    independent_source_required: true
+    same_absolute_thresholds_as_internal: true
+    gap_definition: 外部结果减内部结果；召回率使用内部结果减外部结果。
+    gap_limits:
+      bottom_position_mae_norm: "<= 0.02"
+      heading_mae_deg: "<= 3.0"
+      unsafe_false_valid_rate: "<= 0.03"
+      supported_valid_recall_drop: "<= 0.10"
+    blocking_conditions:
+      - external_threshold_failure
+      - internal_external_gap_exceeded
+      - missing_or_failed_major_condition_group
+      - high_confidence_hard_negative_failure
+      - unresolved_external_source_independence
+    failure_action: 保留结果，继续使用独立 OOD 开发证据改进或缩小声明；不得用冻结外部结果直接调参。
+
+hardware_and_delivery:
+  development_hardware: 当前 Windows 笔记本 CPU
+  implementation_language: Python 3 + OpenCV，优先建立可解释基线
+  deliverables:
+    - 可复现代码与配置
+    - 数据与证据登记
+    - 定量评价和分组失败分析
+    - 图片或视频演示
+    - Day70 中文总结与导师汇报摘要
+
+evidence_roles:
+  open_source_review: 只用于任务设计、基线选择和指标定义，不作为本项目效果证据。
+  id_development: 可用于普通开发和阈值选择，必须按最高泄漏单位分组。
+  ood_development: 可用于稳健性改进，必须记录每次迭代。
+  frozen_external_test: 必须来自独立来源，冻结后不得反向调整算法、阈值或置信度。
+
+out_of_scope:
+  - 真实机器人闭环控制、路径规划、避障和安全认证
+  - ROS/Gazebo 系统集成
+  - 多相机、深度相机、LiDAR、GPS 或 IMU 融合
+  - 未通过数据门禁前的大规模训练
