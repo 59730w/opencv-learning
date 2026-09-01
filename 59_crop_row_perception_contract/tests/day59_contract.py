@@ -59,9 +59,9 @@ def main() -> None:
 
     roles = {item["role"]: item["status"] for item in registry["entries"]}
     assert roles["background_reference"] == "AVAILABLE"
-    assert roles["id_development"] == "NOT_AVAILABLE"
-    assert roles["ood_development"] == "NOT_AVAILABLE"
-    assert roles["frozen_external_test"] == "NOT_AVAILABLE"
+    assert roles["id_development"] in {"NOT_AVAILABLE", "BLOCKED"}
+    assert roles["ood_development"] in {"NOT_AVAILABLE", "BLOCKED"}
+    assert roles["frozen_external_test"] in {"NOT_AVAILABLE", "BLOCKED"}
 
     review = review_path.read_text(encoding="utf-8")
     assert review.count("https://github.com/") >= 7

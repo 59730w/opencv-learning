@@ -1,0 +1,32 @@
+{
+  "audited_on": "2026-09-01",
+  "source_id": "hybrid_minimal_zenodo_18700580",
+  "archive_md5": "79d2b2327e2389da496be8a40d6db415",
+  "archive_status": "DELETED_AFTER_VERIFIED_EXTRACTION",
+  "image_count": 80,
+  "mask_count": 80,
+  "missing_images": [],
+  "missing_masks": [],
+  "decode_failures": [],
+  "shape_mismatches": [],
+  "shape_counts": {
+    "320x240": 48,
+    "1024x576": 21,
+    "3840x2160": 11
+  },
+  "mask_value_counts": {
+    "0,1,2": 42,
+    "0,2": 6,
+    "0,255": 11,
+    "0,1": 21
+  },
+  "duplicate_image_groups": [],
+  "duplicate_mask_groups": [
+    ["369", "370", "371", "372", "373", "374"],
+    ["375", "376", "377", "378", "379"],
+    ["380", "381", "382", "383", "384"],
+    ["385", "386", "387", "388"]
+  ],
+  "allowed_use": "format and pipeline pilot only",
+  "forbidden_use": "random split, external generalization evidence, or project performance claim"
+}

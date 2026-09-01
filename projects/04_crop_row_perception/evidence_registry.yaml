@@ -1,6 +1,6 @@
 schema_version: 1
 project_id: 04_crop_row_perception
-updated: 2026-08-31
+updated: 2026-09-01
 
 entries:
   - id: day59_open_source_review
@@ -12,18 +12,32 @@ entries:
 
   - id: id_development_data
     role: id_development
-    status: NOT_AVAILABLE
-    planned_gate: Day60 data_viability
+    status: BLOCKED
+    candidate: CRDLD v2.1
+    evidence: data/source_registry.json
+    blockers: dataset_license_unknown; field_date_sequence_camera_groups_unknown; reject_negatives_missing
 
   - id: ood_development_data
     role: ood_development
-    status: NOT_AVAILABLE
-    planned_gate: Day60 data_viability
+    status: BLOCKED
+    candidate: CCRDNet Zenodo 15194034
+    evidence: data/source_registry.json
+    blockers: handheld_viewpoint_mismatch; provenance_groups_unknown; reject_negatives_missing
 
   - id: frozen_external_test
     role: frozen_external_test
-    status: NOT_AVAILABLE
-    planned_gate: Day60 只确认候选来源和独立性；实际使用前冻结
+    status: BLOCKED
+    candidate: Bonn Multi-Crop Row Navigation Dataset
+    evidence: data/source_registry.json
+    blockers: access_requires_author_request; dataset_license_unknown; file_level_groups_unknown
+
+  - id: day60_downloaded_pilot
+    role: pipeline_pilot_only
+    status: AVAILABLE_WITH_LIMITS
+    evidence: data/audit_result.json
+    local_path: D:/DL_code/data/crop_row_perception/sources/zenodo_18700580
+    allowed_use: 格式、标签转换和最小管线试运行
+    forbidden_use: ID或外部性能证据、随机图片拆分、泛化声明
 
   - id: robot_control_evidence
     role: real_robot_control

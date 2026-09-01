@@ -11,7 +11,7 @@ CRDLD 等公开数据目前仅是待审查候选，尚未下载或实测。内�
 | 门禁 | 状态 | 日期 | 证据 |
 |---|---|---|---|
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
-| 数据可行性 | NOT_AVAILABLE | — | Day60 执行 |
+| 数据可行性 | BLOCKED | 2026-09-01 | `data_viability_report.md`：许可、分组与冻结外部证据不足 |
 | 环境 | NOT_AVAILABLE | — | 前两门通过后执行 |
 | 管线试运行 | NOT_AVAILABLE | — | 后续执行 |
 | 内部有效性 | NOT_AVAILABLE | — | 后续执行 |
@@ -21,6 +21,8 @@ CRDLD 等公开数据目前仅是待审查候选，尚未下载或实测。内�
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
+Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当天学习已完成，不表示项目可以继续进入环境或管线开发。
+
 ## Day59 产物
 
 - `target_contract.yaml`：任务、坐标、输出、条件、指标和声明边界；
@@ -28,3 +30,11 @@ CRDLD 等公开数据目前仅是待审查候选，尚未下载或实测。内�
 - `docs/open_source_baseline_review.md`：七个开源候选的适用性与许可证边界；
 - `../../59_crop_row_perception_contract/code/day59_geometry.py`：坐标与误差定义的最小可执行参考；
 - `../../59_crop_row_perception_contract/code/day59_notes.md`：完整中文学习笔记。
+
+## Day60 产物
+
+- `data_viability_report.md`：候选数据、实下载检查、阻断项与解除条件；
+- `data/source_registry.json`：五个候选的机器可读来源登记；
+- `data/audit_result.json`：49.7 MB 试审包的配对、解码、尺寸、标签值和重复检查；
+- `../../60_crop_row_data_viability/code/day60_data_audit.py`：可重跑的数据审查器；
+- `../../60_crop_row_data_viability/code/day60_notes.md`：完整中文学习笔记。
