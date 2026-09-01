@@ -4,14 +4,14 @@
 
 当前只研究离线视觉感知：从单目 RGB 图像或视频帧估计中央作物行/可通行走廊的图像平面中心偏移、局部方向、置信度和拒绝状态。项目不包含真实机器人控制，也不把图像坐标误写成物理距离。
 
-CRDLD 等公开数据目前仅是待审查候选，尚未下载或实测。内部与冻结外部必须同时通过绝对阈值和差距规则，才能形成泛化成功声明。
+CRDLD 与 RowDetr 已完成下载和实测：CRDLD 可作受限 ID 开发候选，RowDetr 高粱子源中 1,760 张干净图像已冻结为外部正样本。由于 CRDLD 许可/最高分组仍未知，且前视目标域拒识负样本尚缺，完整数据门禁仍为 `BLOCKED`。
 
 ## 门禁状态
 
 | 门禁 | 状态 | 日期 | 证据 |
 |---|---|---|---|
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
-| 数据可行性 | BLOCKED | 2026-09-01 | `data_viability_report.md`：许可、分组与冻结外部证据不足 |
+| 数据可行性 | BLOCKED | 2026-09-01 | 已有外部正样本；许可、最高分组与拒识负样本仍不足 |
 | 环境 | NOT_AVAILABLE | — | 前两门通过后执行 |
 | 管线试运行 | NOT_AVAILABLE | — | 后续执行 |
 | 内部有效性 | NOT_AVAILABLE | — | 后续执行 |
@@ -36,5 +36,9 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - `data_viability_report.md`：候选数据、实下载检查、阻断项与解除条件；
 - `data/source_registry.json`：五个候选的机器可读来源登记；
 - `data/audit_result.json`：49.7 MB 试审包的配对、解码、尺寸、标签值和重复检查；
+- `data/downloaded_sources_audit.json`：CRDLD 与 RowDetr 下载后的完整实审；
+- `data/frozen_external_sorghum_manifest.json`：1,760 张只读外部正样本冻结清单；
+- `data/build_frozen_sorghum_manifest.py`：清单生成与坏标签排除；
+- `data/sample_remote_zip_camera.py`：无需下载完整大包的远程 ZIP 相机抽样工具；
 - `../../60_crop_row_data_viability/code/day60_data_audit.py`：可重跑的数据审查器；
 - `../../60_crop_row_data_viability/code/day60_notes.md`：完整中文学习笔记。

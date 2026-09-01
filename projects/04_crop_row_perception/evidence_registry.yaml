@@ -12,10 +12,13 @@ entries:
 
   - id: id_development_data
     role: id_development
-    status: BLOCKED
+    status: AVAILABLE_WITH_RESTRICTIONS
     candidate: CRDLD v2.1
-    evidence: data/source_registry.json
-    blockers: dataset_license_unknown; field_date_sequence_camera_groups_unknown; reject_negatives_missing
+    evidence: data/downloaded_sources_audit.json
+    local_path: D:/DL_code/data/crop_row_perception/sources/crdld_v2_1/data
+    allowed_use: 数据加载、掩码清理、模型开发和明确受限的内部评价
+    forbidden_use: 无泄漏内部泛化声明、数据再分发、拒识能力声明
+    blockers: dataset_license_unknown; field_date_sequence_camera_groups_unknown; reject_negatives_missing; one_exact_cross_split_duplicate
 
   - id: ood_development_data
     role: ood_development
@@ -26,10 +29,20 @@ entries:
 
   - id: frozen_external_test
     role: frozen_external_test
+    status: AVAILABLE_POSITIVE_ONLY
+    candidate: RowDetr Sorghum robot subset
+    evidence: data/frozen_external_sorghum_manifest.json
+    local_path: D:/DL_code/data/crop_row_perception/sources/rowdetr_kaggle_8432059/staging/crop-row-detection
+    allowed_use: 模型和规则全部冻结后进行一次正样本位置与方向评价
+    forbidden_use: 调参、训练、拒识评价、完整外部泛化声明
+    blockers: reject_negatives_missing; original_sequence_keys_unavailable
+
+  - id: target_domain_reject_test
+    role: frozen_external_reject_negatives
     status: BLOCKED
-    candidate: Bonn Multi-Crop Row Navigation Dataset
+    candidate: TO_BE_COLLECTED_OR_LICENSED
     evidence: data/source_registry.json
-    blockers: access_requires_author_request; dataset_license_unknown; file_level_groups_unknown
+    blockers: no_forward_view_target_domain_negative_source
 
   - id: day60_downloaded_pilot
     role: pipeline_pilot_only
