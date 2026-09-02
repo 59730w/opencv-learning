@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "scope": "same_source_positive_geometry_learning",
+  "counts": {
+    "train_development": 1250,
+    "validation_development": 248,
+    "same_source_internal_benchmark": 429
+  },
+  "excluded_cross_role_duplicates": [
+    "test_data/276"
+  ],
+  "excluded_within_role_duplicates": [
+    "validation_data/49",
+    "validation_data/167"
+  ],
+  "scoped_gate": "PASS",
+  "full_reject_aware_gate": "BLOCKED",
+  "full_gate_blockers": [
+    "crdld_dataset_license_not_explicit",
+    "crdld_highest_leakage_groups_unavailable",
+    "target_domain_reject_negatives_missing"
+  ],
+  "external_frozen_data_may_influence_development": false
+}

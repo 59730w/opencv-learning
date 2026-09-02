@@ -11,7 +11,7 @@ CRDLD 与 RowDetr 已完成下载和实测：CRDLD 可作受限 ID 开发候选�
 | 门禁 | 状态 | 日期 | 证据 |
 |---|---|---|---|
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
-| 数据可行性 | BLOCKED | 2026-09-01 | 已有外部正样本；许可、最高分组与拒识负样本仍不足 |
+| 数据可行性 | SCOPED PASS / FULL BLOCKED | 2026-09-02 | 正样本学习可继续；许可、最高分组与拒识负样本仍阻断完整声明 |
 | 环境 | NOT_AVAILABLE | — | 前两门通过后执行 |
 | 管线试运行 | NOT_AVAILABLE | — | 后续执行 |
 | 内部有效性 | NOT_AVAILABLE | — | 后续执行 |
@@ -42,3 +42,12 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - `data/sample_remote_zip_camera.py`：无需下载完整大包的远程 ZIP 相机抽样工具；
 - `../../60_crop_row_data_viability/code/day60_data_audit.py`：可重跑的数据审查器；
 - `../../60_crop_row_data_viability/code/day60_notes.md`：完整中文学习笔记。
+
+## Day61 产物
+
+- `day61_scope_decision.yaml`：完整门禁继续阻断、受限正样本学习可继续的双层范围决定；
+- `data/scoped_crdld/`：排除3张精确重复后的训练、验证和同源内部基准清单；
+- `../../61_crop_row_color_illumination/code/day61_color_illumination.py`：有界Gray-World、HSV/Lab/固定ExG、互斥开发分区、清单验证与鲁棒性评分；
+- `../../61_crop_row_color_illumination/tests/test_day61_color_illumination.py`：颜色处理与代理指标测试；
+- `../../61_crop_row_color_illumination/code/day61_notes.md`：详细中文学习笔记；
+- 本地第三次优化结果：`D:/DL_code/data/crop_row_perception/day61_color_illumination/*_v4.*`，因CRDLD许可未明确而不纳入Git。

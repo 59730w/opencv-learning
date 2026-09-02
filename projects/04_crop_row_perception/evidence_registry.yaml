@@ -1,8 +1,25 @@
 schema_version: 1
 project_id: 04_crop_row_perception
-updated: 2026-09-01
+updated: 2026-09-02
 
 entries:
+  - id: day61_scoped_data_gate
+    role: active_learning_scope
+    status: PASS
+    evidence: day61_scope_decision.yaml; data/scoped_crdld/scoped_crdld_manifest_audit.json
+    allowed_use: CRDLD 正样本上的颜色、光照、形态学与几何学习
+    forbidden_use: 拒识通过、无泄漏内部泛化、完整外部泛化或真实机器人声明
+
+  - id: day61_color_illumination
+    role: development_experiment
+    status: GRAYWORLD_HSV_BASELINE_ACCEPTED
+    evidence: ../../61_crop_row_color_illumination/code/day61_notes.md
+    local_output: D:/DL_code/data/crop_row_perception/day61_color_illumination/day61_results_v4.json
+    allowed_use: 为 Day62 使用冻结的有界 Gray-World 加 HSV 主候选，固定 HSV/ExG/Lab 作为对照
+    forbidden_use: 分割IoU声明、外部泛化声明、目标域拒识能力声明
+    validation_scope: CRDLD 1250张训练开发图与248张同源validation-development图
+    frozen_external_accessed: false
+
   - id: day59_open_source_review
     role: background_reference
     status: AVAILABLE
@@ -18,7 +35,8 @@ entries:
     local_path: D:/DL_code/data/crop_row_perception/sources/crdld_v2_1/data
     allowed_use: 数据加载、掩码清理、模型开发和明确受限的内部评价
     forbidden_use: 无泄漏内部泛化声明、数据再分发、拒识能力声明
-    blockers: dataset_license_unknown; field_date_sequence_camera_groups_unknown; reject_negatives_missing; one_exact_cross_split_duplicate
+    blockers: dataset_license_unknown; field_date_sequence_camera_groups_unknown; reject_negatives_missing
+    duplicate_action: validation_data/49, validation_data/167 and test_data/276 excluded from scoped manifests
 
   - id: ood_development_data
     role: ood_development

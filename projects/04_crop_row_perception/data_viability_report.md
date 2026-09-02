@@ -7,6 +7,12 @@
 结论：`BLOCKED`
 门禁标识：`DAY60_DATA_VIABILITY_BLOCKED`
 
+## Day61 受限门禁恢复
+
+2026-09-02 经用户确认，将当前执行范围收窄为“CRDLD 同源正样本几何学习”。完整拒识目标继续保持 `BLOCKED`，受限学习门禁为 `PASS`，标识为 `DAY61_SCOPED_DATA_GATE_PASS`。
+
+可复现清单生成又发现两张验证集内部完全重复：`validation_data/49`、`validation_data/167`；连同跨划分重复 `test_data/276` 一并排除。最终角色数量为训练开发 1,250、验证开发 248、同源内部基准 429。RowDetr 1,760 张外部正样本保持冻结，禁止参与开发决策。证据见 `day61_scope_decision.yaml` 与 `data/scoped_crdld/scoped_crdld_manifest_audit.json`。
+
 ## 1. 结论先行
 
 CRDLD 与 RowDetr 已完成下载、解压、哈希、配对、解码、标签和跨来源重复审查。现在已经具备：

@@ -1,0 +1,43 @@
+schema_version: 1
+decision_date: 2026-09-02
+project_id: 04_crop_row_perception
+
+user_confirmation: >-
+  用户允许在 Day61 颜色与光照处理前尽快完成数据门禁恢复，并要求完成后停止，等待下一次授权。
+
+full_reject_aware_scope:
+  status: BLOCKED
+  blockers:
+    - crdld_dataset_license_not_explicit
+    - crdld_highest_leakage_groups_unavailable
+    - target_domain_reject_negatives_missing
+
+active_learning_scope:
+  name: same_source_positive_geometry_learning
+  status: PASS
+  marker: DAY61_SCOPED_DATA_GATE_PASS
+  allowed:
+    - 仅在 CRDLD 训练与验证开发数据上学习颜色、光照、形态学和几何处理。
+    - CRDLD test 仅作同源受控基准，不得称为无泄漏或外部测试。
+    - RowDetr 高粱清单只作冻结外部正样本，开发阶段不得查看结果或调参。
+  prohibited:
+    - 拒识能力通过声明
+    - 真实机器人控制或真实场景可靠性声明
+    - 使用冻结外部结果选择方法、阈值或预处理
+
+crdld_roles:
+  train_development: 1250
+  validation_development: 248
+  same_source_internal_benchmark: 429
+  excluded_duplicates:
+    - validation_data/49
+    - validation_data/167
+    - test_data/276
+  highest_group_key: NOT_AVAILABLE
+
+frozen_external_positive:
+  source: rowdetr_sorghum_robot
+  count: 1760
+  manifest: data/frozen_external_sorghum_manifest.json
+  manifest_sha256: 4c66a83fef3759abff094c25710ae088f4946d06f113990821412d7b1e496a50
+  development_access: FORBIDDEN
