@@ -25,7 +25,7 @@
 - [01｜YOLOv8 森林烟雾检测](projects/01_yolov8_wildfire_smoke_detection/)：完成环境检查、预训练推理、COCO8 冒烟训练、自定义数据训练、测试集评估、外部图片推理和错误分析。
 - [02｜U-Net 宠物语义分割](projects/02_unet_pet_segmentation/)：基于 Oxford-IIIT Pet 数据集，完成标签检查、同步预处理、冒烟测试、小样本过拟合、U-Net 训练、Dice/IoU 评估、失败案例审计和外部图片泛化测试。
 - [03｜BarkVN-50 树皮树种分类](projects/03_forest_species_classification/)：完成 OpenCV 数据审计、相似组划分、ResNet18 迁移学习、Accuracy/Macro-F1 评估、错误分析、严格外部测试、单图推理和 Gradio Demo。
-- [04｜农业机器人作物行视觉感知](projects/04_crop_row_perception/)：Day59 完成目标契约，Day60 完成数据实审与受限正样本门禁恢复，Day61 冻结有界 Gray-World+HSV 颜色光照基线；可继续 Day62 同源开发，但完整拒识与外部泛化门禁仍为 `BLOCKED`。
+- [04｜农业机器人作物行视觉感知](projects/04_crop_row_perception/)：Day59 完成目标契约，Day60 完成数据实审与受限正样本门禁恢复，Day61 冻结有界 Gray-World+HSV，Day62 通过训练五折冻结方向性形态学与透视感知区域过滤；可继续 Day63 同源几何开发，但完整拒识与外部泛化门禁仍为 `BLOCKED`。
 
 ---
 
@@ -120,6 +120,7 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 - Day59：转入农业机器人作物行视觉感知预研；审查七个开源项目/数据候选，选择经典可解释基线与位置/方向评价框架，完成 Practical 04 目标契约、坐标几何参考代码、证据角色和拒绝边界，目标契约门为 `PASS`。
 - Day60：完成 CRDLD、RowDetr 等候选数据的来源、许可、配对、解码、重复与视角实审；建立排除3张重复图后的训练开发、验证开发和同源内部基准清单。受限正样本几何学习可继续，但许可、最高泄漏分组与目标域负样本仍阻断完整数据门禁。
 - Day61：完成 HSV、Lab、固定 ExG 与光照校正对比，最终冻结有界 Gray-World+HSV；在248张未参与选参的同源验证开发图上，P10 gap 从0.146提升到0.171，最坏背景激活从0.708降到0.390，作为 Day62 形态学与区域分析起点。RowDetr 冻结外部集未参与开发，外部泛化仍未验证。
+- Day62：第一版完成开闭运算、连通域面积过滤和轮廓统计；第二版针对统一面积阈值会误删远处小植被的问题，引入5×7纵向closing、透视感知面积过滤及纵向带连续性指标，并以1,250张train-development确定性五折选择。冻结方案在5/5折和已复用的248张validation-development确认中通过门槛，可作为Day63输入；不构成分割、拒识或外部泛化证据。
 
 ---
 

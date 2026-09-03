@@ -20,6 +20,19 @@ entries:
     validation_scope: CRDLD 1250张训练开发图与248张同源validation-development图
     frozen_external_accessed: false
 
+  - id: day62_morphology_regions
+    role: development_experiment
+    status: DIRECTIONAL_PERSPECTIVE_MORPHOLOGY_ACCEPTED_FOR_DAY63
+    evidence: ../../62_crop_row_morphology_regions/code/day62_notes.md
+    local_output: D:/DL_code/data/crop_row_perception/day62_morphology_regions/day62_results_v2.json
+    allowed_use: 为Day63使用冻结的3x3 opening、5x7纵向closing和透视感知0.00020连通域面积过滤
+    forbidden_use: 分割IoU声明、拒识能力声明、外部泛化声明或真实机器人可靠性声明
+    validation_scope: CRDLD 1250张训练开发图与248张同源validation-development图
+    selection_protocol: 1250张train-development确定性五折选择；至少4/5折通过
+    validation_note: 248张validation-development已用于第一版，仅作第二版确认性复用，不是新的独立验证
+    same_source_internal_benchmark_accessed: false
+    frozen_external_accessed: false
+
   - id: day59_open_source_review
     role: background_reference
     status: AVAILABLE

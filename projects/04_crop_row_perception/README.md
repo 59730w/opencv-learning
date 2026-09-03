@@ -51,3 +51,12 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - `../../61_crop_row_color_illumination/tests/test_day61_color_illumination.py`：颜色处理与代理指标测试；
 - `../../61_crop_row_color_illumination/code/day61_notes.md`：详细中文学习笔记；
 - 本地第三次优化结果：`D:/DL_code/data/crop_row_perception/day61_color_illumination/*_v4.*`，因CRDLD许可未明确而不纳入Git。
+
+## Day62 产物
+
+- `../../62_crop_row_morphology_regions/code/day62_morphology_regions.py`：开闭运算、连通域/轮廓统计、面积过滤、训练五折选择和已复用验证确认；
+- `../../62_crop_row_morphology_regions/tests/test_day62_morphology_regions.py`：二值掩码、形态学、区域统计、门槛与真实文件评估测试；
+- `../../62_crop_row_morphology_regions/code/day62_notes.md`：完整中文学习笔记；
+- 第一版方案：3×3 opening、5×5 closing、删除小于图像面积0.02%的连通域；
+- 第二版冻结方案：3×3 opening、5×7纵向closing、顶部阈值为底部40%的透视感知面积过滤；训练开发集五折中5/5通过，已复用validation-development确认门槛通过；
+- 本地第一版、失败候选和第二版结果：`D:/DL_code/data/crop_row_perception/day62_morphology_regions/`，因CRDLD许可未明确而不纳入Git。
