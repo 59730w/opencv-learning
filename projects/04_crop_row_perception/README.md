@@ -60,3 +60,13 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - 第一版方案：3×3 opening、5×5 closing、删除小于图像面积0.02%的连通域；
 - 第二版冻结方案：3×3 opening、5×7纵向closing、顶部阈值为底部40%的透视感知面积过滤；训练开发集五折中5/5通过，已复用validation-development确认门槛通过；
 - 本地第一版、失败候选和第二版结果：`D:/DL_code/data/crop_row_perception/day62_morphology_regions/`，因CRDLD许可未明确而不纳入Git。
+
+## Day63 产物
+
+- `../../63_crop_row_geometry_extraction/code/day63_crop_row_geometry.py`：归一化ROI、未标定透视示范、Hough与第一版基线、多尺度掩膜特征、Extra Trees端点回归、五折选择、不确定性和状态输出；
+- `../../63_crop_row_geometry_extraction/tests/test_day63_crop_row_geometry.py`：22项合成、边界、五折、回归模型和小型端到端测试；
+- `../../63_crop_row_geometry_extraction/code/day63_notes.md`：完整中文学习笔记、公式、实验协议、失败轮次和证据边界；
+- 第一版 `support_sigma9_center10_angle20` 因方向P90和双阈值长尾不足而降为对照；第二版 `extra_depth12_leaf2` 在1,250张train-development五折逐折通过改进门，五折平均valid fraction为0.9264、近端位置MAE为0.0205、方向MAE为1.944°、双阈值达标率为88.24%；
+- 248张validation-development已经参与Day63开发；第二版指标0.9476、0.0239、1.809°、方向P90 3.994°和双阈值82.66%只能作为同源开发证据，不能称为未触碰确认；
+- 本地结果：`D:/DL_code/data/crop_row_perception/day63_crop_row_geometry/`，因CRDLD许可未明确而不纳入Git；
+- CRDLD同源内部基准、RowDetr冻结外部集和目标域拒识负样本均未访问或不可用。

@@ -1,6 +1,6 @@
 schema_version: 1
 project_id: 04_crop_row_perception
-updated: 2026-09-02
+updated: 2026-09-04
 
 entries:
   - id: day61_scoped_data_gate
@@ -32,6 +32,21 @@ entries:
     validation_note: 248张validation-development已用于第一版，仅作第二版确认性复用，不是新的独立验证
     same_source_internal_benchmark_accessed: false
     frozen_external_accessed: false
+
+  - id: day63_crop_row_geometry
+    role: development_experiment
+    status: V2_TRAIN_FIVE_FOLD_IMPROVEMENT_GATE_PASS
+    evidence: ../../63_crop_row_geometry_extraction/code/day63_notes.md
+    local_output: D:/DL_code/data/crop_row_perception/day63_crop_row_geometry/day63_results_v2.json
+    selected_method: extra_depth12_leaf2
+    allowed_use: 为Day64提供中央行近点、远点、方向代理、集成不确定性、支持度和几何状态
+    forbidden_use: 未标定鸟瞰或米制测量、拒识能力、无泄漏内部泛化、外部泛化或真实机器人可靠性声明
+    selection_protocol: 1250张train-development确定性五折选择；第二版必须逐折满足有效率、位置不劣化、方向改善、方向P90和双阈值提升门槛
+    development_note: 248张validation-development已参与Day62和Day63开发，当前不存在未触碰确认集
+    tail_note: 第二版方向P90降至3.994度且双阈值达标率升至82.66%，但最大位置误差0.1384仍暴露少量相邻行误选，留待Day67分类和Day68单原因改进
+    same_source_internal_benchmark_accessed: false
+    frozen_external_accessed: false
+    reject_aware_evaluation_available: false
 
   - id: day59_open_source_review
     role: background_reference
