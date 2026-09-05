@@ -1,8 +1,12 @@
-# Day63：作物行几何提取——ROI、透视、Hough 与约束整线搜索
+# Day63：多作物行几何重学——从单行基线到多行中心线网络
+
+> 2026-09-05 原位重学说明：第1～17节与附录A～F保留第一版和单行第二版历史，
+> 不再代表当前最终方法。当前结论、指标和新项目交接以第18～24节为准。
 
 ## 1. 今天完成了什么
 
-Day63 把 Day62 冻结的二值候选区域转换为一条可解释的中央作物行几何。完整链路是：
+Day63 最初把 Day62 冻结的二值候选区域转换为一条可解释的中央作物行几何；
+这条旧链路现在只作为单行基线保留：
 
 ```text
 RGB图像
@@ -446,16 +450,171 @@ READY_FOR_DAY64_MEASUREMENT_LESSON
 REAL_ROBOT_RELIABILITY_NOT_ESTABLISHED
 ```
 
+## 18. 为什么必须原位重学 Day63
+
+Day59 合同已经从“找一条中央作物行”修订为“找出所有可评价作物行，再选择相机中心
+左右相邻边界并计算行间走廊”。因此旧第二版虽然能准确回归一条中央参考行，却无法回答：
+
+- 画面中到底有多少条可评价作物行；
+- 哪两条是当前走廊左右边界；
+- 中央作物行出现时为什么必须降级，而不能把它当作行驶中心；
+- 多条线是否具有一致的透视方向。
+
+本次没有新建重复的 Day63 目录，而是在原代码、测试和笔记中保留旧方法作为基线，加入
+多行实现。Day61 颜色和 Day62 形态学参数均未重调。
+
+## 19. 多行重学的失败轮次
+
+重学不是一次得到好结果，中间负面结果均保存在本地：
+
+1. 传统多带峰值、Hough消失点与规则格网投票：复用验证的召回约0.51～0.66，失败；
+2. 一维多尺度投影网络：训练召回约0.90，复用验证召回约0.74，因丢失二维透视关系失败；
+3. Tiny U-Net三折交叉拟合：总体召回0.932，但精确率0.726、方向MAE 6.303°，失败；
+4. ResNet18整训：训练P/R接近0.99，复用验证召回仍约0.765，暴露训练与验证行密度偏移；
+5. 最终方法：按数据分区进行三折、当前折标签排除的ResNet18中心线交叉拟合。
+
+这里没有通过固定预测“五行/六行”来刷分。行数回归在训练到验证的测试中平均只预测4.44行，
+而验证真值平均5.71行，证明固定行数或数据集先验不能作为真实多行检测方法。
+
+## 20. 最终方法
+
+输入为四通道：
+
+```text
+RGB三通道 + Day62冻结二值形态学掩码一通道
+```
+
+模型使用本机缓存的ImageNet ResNet18编码器和轻量U-Net解码器，在192×192分辨率输出
+作物行中心线热图。解码器在固定 `y_norm=0.40` 水平带找峰值确定行数，再利用二维热图
+拟合每条行的远点、近点与方向。输出按远端位置从左到右排序。
+
+走廊只在以下条件同时满足时生成：
+
+1. 相机中心左、右各存在一条相邻检测行；
+2. 相机中心排除带内没有作物行；
+3. 左右边界都至少得到三条水平带支持；
+4. 走廊中心是左右边界的中线，不是任意一条作物行。
+
+## 21. 交叉拟合协议与证据边界
+
+训练开发1250张和已复用验证开发248张分别做三折。每张报告成绩的图片都由没有读取该图
+标签的折模型预测：
+
+- 训练开发折：从本地ImageNet ResNet18权重开始，在其余两折训练10轮；
+- 验证开发折：从训练开发模型开始，只在其余两个验证折微调8轮；
+- 当前验证折的标签不参与其模型拟合。
+
+该协议降低了直接训练回看的偏差，但它不是未触碰确认：架构和解码阈值是在两套开发数据
+已经被多次访问后确定的，而且CRDLD最高泄漏分组仍未知。因此这些成绩只能叫同源开发
+out-of-fold证据，不能叫独立内部测试或外部泛化。
+
+## 22. 最终多行结果
+
+| 分区 | 行精确率 | 行召回率 | 匹配位置MAE | 匹配方向MAE | 多行几何门 |
+|---|---:|---:|---:|---:|---|
+| 训练开发 OOF，1250张 | 0.9552 | 0.9585 | 0.0101 | 1.652° | PASS |
+| 复用验证开发 OOF，248张 | 0.9507 | 0.8178 | 0.0120 | 2.873° | PASS |
+| 合计 OOF，1498张 | 0.9544 | 0.9298 | 0.0104 | 1.871° | PASS |
+
+预设的四个Day63多行几何门为P≥0.80、R≥0.80、位置MAE≤0.05、方向MAE≤5°；
+两个分区均全部通过。相比传统多带方法，最终方法既找回更多行，也显著降低方向误差。
+
+走廊图像代理也得到改善：合计左右边界成对正确率0.9160、走廊中心MAE 0.0146、
+受支持帧valid召回0.9248。但不安全false-valid率仍为0.1314，复用验证分区为0.2807，
+没有达到合同≤0.05的安全门。这说明“多行几何提取”已经过关，“可靠走廊拒识”仍未过关。
+
+模型纯GPU热图推理实测约3.75 ms/帧；该值不含Day61/62预处理和几何解码，不能替代
+合同要求的640×360 CPU端到端计时，完整性能验收留到Day66。
+
+## 23. 新增代码、测试与本地产物
+
+关键新增接口：
+
+- `CropRowLine`、`MultiRowPrediction`：多行与走廊结构；
+- `extract_multirow_geometry`：传统多带基线；
+- `match_ordered_crop_rows`：顺序保持的一对一行匹配；
+- `derive_image_corridor`：左右相邻边界与中线；
+- `TinyRowUNet`、`ResNet18RowUNet`：二维中心线网络；
+- `prepare_centerline_tensor`、`decode_centerline_heatmap`：四通道输入与多行解码；
+- `split_crossfit_folds`：确定性标签排除折；
+- `finalize_day63_resnet_oof_from_cache`：OOF结果复核与交付产物。
+
+最终测试为：
+
+```text
+34 passed
+```
+
+本地主要产物：
+
+```text
+day63_results_resnet18_oof.json
+geometry_metrics_resnet18_oof.csv
+geometry_comparison_resnet18_oof.jpg
+day63_resnet18_centerline_model.pt
+day63_results_centerline_round1_rejected.json
+```
+
+完整重跑命令如下；默认会复用已校验的OOF概率缓存，增加
+`--no-reuse-oof-cache` 才会重新训练全部折模型：
+
+```powershell
+D:\conda\envs\forest-species\python.exe -X utf8 `
+  63_crop_row_geometry_extraction\code\day63_crop_row_geometry.py `
+  --train-root D:\DL_code\data\crop_row_perception\sources\crdld_v2_1\data\train_data `
+  --train-manifest projects\04_crop_row_perception\data\scoped_crdld\crdld_train_development_manifest.jsonl `
+  --validation-root D:\DL_code\data\crop_row_perception\sources\crdld_v2_1\data\validation_data `
+  --validation-manifest projects\04_crop_row_perception\data\scoped_crdld\crdld_validation_development_manifest.jsonl `
+  --output-dir D:\DL_code\data\crop_row_perception\day63_crop_row_geometry `
+  --study resnet_oof `
+  --pretrained-weights C:\Users\13262\.cache\torch\hub\checkpoints\resnet18-f37072fd.pth
+```
+
+CRDLD许可尚未确认，因此图片、逐图概率、模型和运行结果继续只保存在
+`D:/DL_code/data/crop_row_perception/day63_crop_row_geometry/`，不上传GitHub；Git只同步代码、
+测试、笔记和不含原始数据的项目进度说明。
+
+## 24. Day63重学最终评价
+
+作为Day63“检测所有可评价可见作物行并形成图像走廊候选”的学习成果，本版达到优秀：
+
+- 两个开发分区的标签排除OOF多行P/R、位置和方向门全部通过；
+- 输出不再固定为一条中央行；
+- 左右边界、走廊中线和中央作物行降级规则已落地；
+- 旧单行方法和所有主要失败轮次均保留；
+- 没有访问CRDLD test_data或RowDetr冻结外部集。
+
+但作为真实农业机器人完整视觉仍不能称优秀，当前明确阻断项是：
+
+- 不安全false-valid率未达到0.05；
+- 没有真实走廊、机器人车体、地头和负样本真值；
+- 没有相机标定、米制测量、视频时序、转弯重选和外部冻结测试；
+- 验证开发数据已经参与方法选择，最高泄漏分组仍未知。
+
+因此正确状态是：
+
+```text
+DAY63_MULTIROW_RELEARNING_COMPLETE
+TRAIN_DEVELOPMENT_OOF_MULTIROW_GEOMETRY_PASS
+REUSED_VALIDATION_DEVELOPMENT_OOF_MULTIROW_GEOMETRY_PASS
+CORRIDOR_BOUNDARY_AND_CENTER_PROXY_PASS
+UNSAFE_FALSE_VALID_GATE_FAIL
+CRDLD_INTERNAL_TEST_NOT_ACCESSED
+ROWDETR_FROZEN_EXTERNAL_NOT_ACCESSED
+READY_FOR_DAY65_TEMPORAL_AND_REJECTION_WORK
+REAL_ROBOT_RELIABILITY_NOT_ESTABLISHED
+```
+
 Day64 可以使用今天输出的 `near_x_norm`、`far_x_norm` 和 `heading_deg` 学习图像中心偏移、消失点与相机坐标测量，但不能把图像归一化偏移解释为米制误差。
 
-## 18. 为什么需要第二版
+## 附录A：为什么曾经需要单行第二版
 
 第一版虽然通过了“均值误差 + 有效率”门槛，但还不能令人满意：在248张已复用的
 `validation-development` 上，位置P90为0.0615、方向P90为9.615°，并且只有
 60.89%的全部帧同时满足位置误差不超过0.05和方向误差不超过5°。对比图还显示，
 单条支撑线搜索可能被相邻作物行吸引。因此第一版保留为对照基线，不再作为Day64首选输入。
 
-## 19. 第二版方法：多尺度掩膜特征 + Extra Trees端点回归
+## 附录B：单行第二版方法——多尺度掩膜特征 + Extra Trees端点回归
 
 第二版不修改Day61颜色阈值，也不修改Day62冻结形态学。它只改变几何层：
 
@@ -470,7 +629,7 @@ Day64 可以使用今天输出的 `near_x_norm`、`far_x_norm` 和 `heading_deg`
 保持有效率至少0.85、位置MAE不得比第一版差0.005以上、方向MAE至少改善0.5°、
 方向P90不超过5°，并且双阈值达标率至少逐折提升0.10。
 
-## 20. 第二版五折结果
+## 附录C：单行第二版五折结果
 
 四组Extra Trees候选全部通过预注册的逐折改进门。按“五折平均双阈值达标率最高，
 再比较位置和方向误差”的规则，训练阶段选中：
@@ -496,7 +655,7 @@ max_features = 0.7
 
 这里的五折只证明在CRDLD训练开发范围内稳定改善，不是外部泛化证据。
 
-## 21. 已复用开发集上的第一版与第二版对照
+## 附录D：已复用开发集上的单行第一版与第二版对照
 
 这248张图在Day62和Day63第一版已经参与开发，所以本节只能叫“开发对照”，不能叫
 独立确认。第二版所有预注册开发门均通过：
@@ -516,7 +675,7 @@ max_features = 0.7
 对比图中多数第二版预测更贴近中央参考行，但样本37等仍存在明显位置错行。这一负面结果
 被保留，后续应在Day67归入失败案例，在Day68只能选择一个主要原因做受控改进。
 
-## 22. 第二版产物与复现
+## 附录E：单行第二版产物与复现
 
 本地产物：
 
@@ -530,7 +689,7 @@ D:/DL_code/data/crop_row_perception/day63_crop_row_geometry/day63_geometry_v2.jo
 复现时在原命令增加 `--study v2`；当前命令行默认也是第二版。模型文件保存了估计器、
 320维特征合同、端点目标合同、选中配置和Day62冻结配置，不包含原始CRDLD图像。
 
-## 23. 第二版最终评价与Day64交接
+## 附录F：单行第二版历史评价与Day64交接
 
 作为Day63课程成果，第二版达到优秀并足以进入Day64：完整覆盖ROI/透视限制、Hough基线、
 稳健几何回归、五折选择、尾部指标、不确定性、模型持久化、逐图CSV和可视化审计；22项

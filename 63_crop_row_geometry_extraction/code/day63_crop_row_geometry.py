@@ -1,9 +1,9 @@
-"""Day63 crop-row geometry extraction from the frozen Day62 candidate mask.
+"""Day63 single-row baselines and multi-row geometry from frozen Day62 masks.
 
-CRDLD annotations contain several crop-row centerlines rather than vegetation
-regions.  This lesson therefore selects the row nearest the camera image centre
-at the declared near evaluation line.  Reported results are same-source
-positive-development geometry evidence, not robot-control or external evidence.
+The current revision detects all evaluable CRDLD centerlines, orders them, and
+derives an image-space corridor candidate.  The historical central-row methods
+remain as baselines.  Results are development evidence, not robot-control or
+external-generalization evidence.
 """
 
 from __future__ import annotations
@@ -23,6 +23,10 @@ import cv2
 import joblib
 import numpy as np
 from sklearn.ensemble import ExtraTreesRegressor
+from scipy.signal import find_peaks
+import torch
+from torch import nn
+from torchvision.models import resnet18
 
 
 DAY61_CODE_DIR = Path(__file__).resolve().parents[2] / "61_crop_row_color_illumination" / "code"
@@ -155,6 +159,629 @@ class ExtraTreesGeometryModel:
         endpoint_std = tree_predictions.std(axis=0)
         uncertainty = np.sqrt(np.mean(endpoint_std**2, axis=1))
         return mean, uncertainty
+
+
+@dataclass(frozen=True)
+class CropRowLine:
+    """One image-plane crop-row line at the frozen far/near evaluation rows."""
+
+    far_x_norm: float
+    near_x_norm: float
+    confidence: float
+    support_band_count: int
+
+    @property
+    def heading_deg(self) -> float:
+        return _heading_deg(self.near_x_norm, self.far_x_norm)
+
+    def x_at(self, y_norm: float) -> float:
+        fraction = (y_norm - FAR_Y_NORM) / (NEAR_Y_NORM - FAR_Y_NORM)
+        return self.far_x_norm + fraction * (self.near_x_norm - self.far_x_norm)
+
+
+@dataclass(frozen=True)
+class MultiRowPrediction:
+    method: str
+    status: str
+    rows: tuple[CropRowLine, ...]
+    vanishing_point_norm: tuple[float, float] | None
+    corridor_left_index: int | None
+    corridor_right_index: int | None
+    corridor_center: CropRowLine | None
+    confidence: float
+    reason: str
+
+
+MULTIROW_BAND_Y_NORMS = tuple(float(value) for value in np.linspace(0.22, 0.82, 13))
+MULTIROW_ANCHOR_Y_NORM = FAR_Y_NORM
+CORRIDOR_AUDIT_Y_NORM = 0.80
+
+
+class _RowConvBlock(nn.Module):
+    def __init__(self, input_channels: int, output_channels: int) -> None:
+        super().__init__()
+        self.layers = nn.Sequential(
+            nn.Conv2d(input_channels, output_channels, 3, padding=1),
+            nn.BatchNorm2d(output_channels),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(output_channels, output_channels, 3, padding=1),
+            nn.BatchNorm2d(output_channels),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        return self.layers(inputs)
+
+
+class TinyRowUNet(nn.Module):
+    """Small heatmap model for same-source crop-row centerline learning."""
+
+    def __init__(self, base_channels: int = 16) -> None:
+        super().__init__()
+        self.encoder1 = _RowConvBlock(4, base_channels)
+        self.encoder2 = _RowConvBlock(base_channels, base_channels * 2)
+        self.bottleneck = _RowConvBlock(base_channels * 2, base_channels * 4)
+        self.up2 = nn.ConvTranspose2d(base_channels * 4, base_channels * 2, 2, 2)
+        self.decoder2 = _RowConvBlock(base_channels * 4, base_channels * 2)
+        self.up1 = nn.ConvTranspose2d(base_channels * 2, base_channels, 2, 2)
+        self.decoder1 = _RowConvBlock(base_channels * 2, base_channels)
+        self.output = nn.Conv2d(base_channels, 1, 1)
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        level1 = self.encoder1(inputs)
+        level2 = self.encoder2(nn.functional.max_pool2d(level1, 2))
+        bottleneck = self.bottleneck(nn.functional.max_pool2d(level2, 2))
+        decoded2 = self.decoder2(torch.cat((self.up2(bottleneck), level2), dim=1))
+        decoded1 = self.decoder1(torch.cat((self.up1(decoded2), level1), dim=1))
+        return self.output(decoded1)
+
+
+class _RowUpBlock(nn.Module):
+    def __init__(self, input_channels: int, skip_channels: int, output_channels: int) -> None:
+        super().__init__()
+        self.layers = _RowConvBlock(input_channels + skip_channels, output_channels)
+
+    def forward(self, inputs: torch.Tensor, skip: torch.Tensor) -> torch.Tensor:
+        resized = nn.functional.interpolate(
+            inputs, size=skip.shape[-2:], mode="bilinear", align_corners=False
+        )
+        return self.layers(torch.cat((resized, skip), dim=1))
+
+
+class ResNet18RowUNet(nn.Module):
+    """Four-channel U-Net decoder over a locally supplied ResNet18 encoder."""
+
+    def __init__(self, pretrained_state: dict[str, torch.Tensor] | None = None) -> None:
+        super().__init__()
+        encoder = resnet18(weights=None)
+        if pretrained_state is not None:
+            encoder.load_state_dict(pretrained_state)
+        original_first = encoder.conv1
+        self.conv1 = nn.Conv2d(4, 64, 7, 2, 3, bias=False)
+        with torch.no_grad():
+            self.conv1.weight[:, :3] = original_first.weight
+            self.conv1.weight[:, 3:4] = original_first.weight.mean(dim=1, keepdim=True)
+        self.bn1 = encoder.bn1
+        self.relu = encoder.relu
+        self.pool = encoder.maxpool
+        self.layer1 = encoder.layer1
+        self.layer2 = encoder.layer2
+        self.layer3 = encoder.layer3
+        self.layer4 = encoder.layer4
+        self.up3 = _RowUpBlock(512, 256, 256)
+        self.up2 = _RowUpBlock(256, 128, 128)
+        self.up1 = _RowUpBlock(128, 64, 64)
+        self.up0 = _RowUpBlock(64, 64, 32)
+        self.output = nn.Conv2d(32, 1, 1)
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        level0 = self.relu(self.bn1(self.conv1(inputs)))
+        level1 = self.layer1(self.pool(level0))
+        level2 = self.layer2(level1)
+        level3 = self.layer3(level2)
+        level4 = self.layer4(level3)
+        decoded = self.up3(level4, level3)
+        decoded = self.up2(decoded, level2)
+        decoded = self.up1(decoded, level1)
+        decoded = self.up0(decoded, level0)
+        return nn.functional.interpolate(
+            self.output(decoded),
+            size=inputs.shape[-2:],
+            mode="bilinear",
+            align_corners=False,
+        )
+
+
+def prepare_centerline_tensor(
+    image: np.ndarray,
+    day62_mask: np.ndarray,
+    label: np.ndarray,
+    *,
+    resolution: int = 128,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Build RGB + frozen-Day62 input and a slightly widened binary target."""
+    if image.ndim != 3 or image.shape[2] != 3:
+        raise ValueError("image must be a BGR image")
+    _validate_binary_mask(day62_mask)
+    if label.ndim != 2:
+        raise ValueError("label must be two-dimensional")
+    if resolution < 32 or resolution % 4:
+        raise ValueError("resolution must be a multiple of four and at least 32")
+    rgb = cv2.resize(
+        cv2.cvtColor(image, cv2.COLOR_BGR2RGB),
+        (resolution, resolution),
+        interpolation=cv2.INTER_AREA,
+    )
+    mask = cv2.resize(
+        day62_mask,
+        (resolution, resolution),
+        interpolation=cv2.INTER_NEAREST,
+    )
+    target = cv2.resize(
+        label,
+        (resolution, resolution),
+        interpolation=cv2.INTER_NEAREST,
+    )
+    target = cv2.dilate((target > 80).astype(np.uint8), np.ones((3, 3), np.uint8))
+    features = np.concatenate((rgb, mask[:, :, None]), axis=2).transpose(2, 0, 1)
+    return features.astype(np.uint8), target[None].astype(np.uint8)
+
+
+def split_crossfit_folds(
+    stems: list[str], *, fold_count: int = 3
+) -> list[list[str]]:
+    """Deterministically cover development items with disjoint OOF folds."""
+    if fold_count < 2 or fold_count > len(stems):
+        raise ValueError("fold_count must be between two and the sample count")
+    ordered = sorted(stems, key=lambda stem: hashlib.sha256(stem.encode()).hexdigest())
+    return [ordered[index::fold_count] for index in range(fold_count)]
+
+
+def decode_centerline_heatmap(
+    probability: np.ndarray,
+    *,
+    peak_height: float = 0.20,
+    peak_prominence: float = 0.05,
+    peak_distance_norm: float = 0.025,
+) -> MultiRowPrediction:
+    """Use anchor peaks for row count and the 2-D heatmap for row direction."""
+    if probability.ndim != 2 or not np.isfinite(probability).all():
+        raise ValueError("probability must be a finite two-dimensional array")
+    height, width = probability.shape
+    anchor_y = round(FAR_Y_NORM * (height - 1))
+    anchor_profile = probability[
+        max(0, anchor_y - 2) : min(height, anchor_y + 3)
+    ].mean(axis=0)
+    peak_indices, properties = find_peaks(
+        anchor_profile,
+        height=peak_height,
+        prominence=peak_prominence,
+        distance=max(2, round(peak_distance_norm * width)),
+    )
+    binary = np.where(probability >= peak_height, 255, 0).astype(np.uint8)
+    raw = extract_multirow_geometry(binary, label_mode=True)
+    available = list(raw.rows)
+    rows: list[CropRowLine] = []
+    for peak_index, strength in zip(peak_indices, properties["peak_heights"]):
+        far_x = float(peak_index / max(1, width - 1))
+        if available:
+            nearest_index = int(
+                np.argmin([abs(row.far_x_norm - far_x) for row in available])
+            )
+            nearest = available[nearest_index]
+        else:
+            nearest = None
+        if nearest is not None and abs(nearest.far_x_norm - far_x) <= 0.055:
+            selected = available.pop(nearest_index)
+            rows.append(
+                CropRowLine(
+                    far_x,
+                    selected.near_x_norm + far_x - selected.far_x_norm,
+                    float(strength),
+                    selected.support_band_count,
+                )
+            )
+        else:
+            vp_x, vp_y = raw.vanishing_point_norm or (0.5, 0.05)
+            scale = (NEAR_Y_NORM - vp_y) / max(0.08, FAR_Y_NORM - vp_y)
+            near_x = vp_x + (far_x - vp_x) * scale
+            rows.append(CropRowLine(far_x, float(near_x), float(strength), 1))
+    rows.sort(key=lambda row: row.far_x_norm)
+    ordered = tuple(rows)
+    corridor = derive_image_corridor(ordered)
+    indices = _corridor_indices(ordered)
+    if not ordered:
+        status, reason = "reject", "no learned anchor peaks"
+    elif corridor is None:
+        status, reason = "degraded", "rows found but safe image corridor is unavailable"
+    else:
+        status, reason = "valid", "learned rows and supported adjacent corridor available"
+    return MultiRowPrediction(
+        "tiny_unet_centerline_heatmap",
+        status,
+        ordered,
+        raw.vanishing_point_norm,
+        indices[0] if indices else None,
+        indices[1] if indices else None,
+        corridor,
+        float(np.mean([row.confidence for row in ordered])) if ordered else 0.0,
+        reason,
+    )
+
+
+def _estimate_mask_vanishing_point(mask: np.ndarray) -> tuple[float, float] | None:
+    height, width = mask.shape
+    edges = cv2.Canny(mask, 30, 100)
+    segments = cv2.HoughLinesP(
+        edges,
+        1,
+        np.pi / 720,
+        threshold=max(18, round(0.05 * height)),
+        minLineLength=max(20, round(0.07 * height)),
+        maxLineGap=max(12, round(0.05 * height)),
+    )
+    if segments is None:
+        return None
+    lines: list[tuple[float, float, float]] = []
+    for x1, y1, x2, y2 in segments[:, 0]:
+        if abs(y2 - y1) < 0.08 * height:
+            continue
+        slope = (x2 - x1) / (y2 - y1)
+        if abs(slope) > 1.8:
+            continue
+        intercept = x1 - slope * y1
+        lines.append((float(slope), float(intercept), float(np.hypot(x2 - x1, y2 - y1))))
+    lines = sorted(lines, key=lambda line: line[2], reverse=True)[:80]
+
+    intersections: list[tuple[float, float]] = []
+    weights: list[float] = []
+    for index, (slope_a, intercept_a, length_a) in enumerate(lines):
+        for slope_b, intercept_b, length_b in lines[index + 1 :]:
+            if abs(slope_a - slope_b) < 0.12:
+                continue
+            y_px = (intercept_b - intercept_a) / (slope_a - slope_b)
+            x_px = slope_a * y_px + intercept_a
+            point = (x_px / (width - 1), y_px / (height - 1))
+            if 0.15 <= point[0] <= 0.85 and -0.30 <= point[1] <= 0.45:
+                intersections.append(point)
+                weights.append(min(length_a, length_b))
+    if not intersections:
+        return None
+
+    points = np.asarray(intersections, dtype=np.float64)
+    base_weights = np.asarray(weights, dtype=np.float64)
+    estimate = np.average(points, axis=0, weights=base_weights)
+    for _ in range(20):
+        distances = np.linalg.norm(points - estimate, axis=1)
+        robust_weights = base_weights / np.maximum(distances, 0.02)
+        updated = np.average(points, axis=0, weights=robust_weights)
+        if np.linalg.norm(updated - estimate) < 1e-4:
+            estimate = updated
+            break
+        estimate = updated
+    return float(estimate[0]), float(estimate[1])
+
+
+def _band_peak_points(
+    mask: np.ndarray, *, label_mode: bool
+) -> list[tuple[float, float, float]]:
+    height, width = mask.shape
+    points: list[tuple[float, float, float]] = []
+    for y_norm in MULTIROW_BAND_Y_NORMS:
+        y_px = round(y_norm * (height - 1))
+        half_height = 3 if label_mode else max(3, round(0.01 * height))
+        band = (mask[max(0, y_px - half_height) : min(height, y_px + half_height + 1)] > 0).mean(axis=0).astype(np.float32)
+        if label_mode:
+            active = band >= 0.12
+            changes = np.diff(np.r_[False, active, False].astype(np.int8))
+            starts = np.flatnonzero(changes == 1)
+            ends = np.flatnonzero(changes == -1)
+            peaks = [(start + end - 1) / 2.0 for start, end in zip(starts, ends)]
+            strengths = [1.0] * len(peaks)
+        else:
+            smoothed = cv2.GaussianBlur(
+                band[None, :], (0, 0), sigmaX=max(3.0, 0.01 * width)
+            )[0]
+            peak_indices, properties = find_peaks(
+                smoothed,
+                distance=max(8, round(0.055 * width)),
+                prominence=0.02,
+                height=0.035,
+            )
+            peaks = peak_indices.tolist()
+            strengths = properties["peak_heights"].tolist()
+        for peak, strength in zip(peaks, strengths):
+            points.append((float(peak / (width - 1)), y_norm, float(strength)))
+    return points
+
+
+def _cluster_band_points(
+    points: list[tuple[float, float, float]],
+    vanishing_point: tuple[float, float],
+    *,
+    label_mode: bool,
+) -> tuple[CropRowLine, ...]:
+    vp_x, vp_y = vanishing_point
+    projected: list[tuple[float, float, float, float]] = []
+    for x_norm, y_norm, strength in points:
+        if abs(y_norm - vp_y) < 0.04:
+            continue
+        anchor_x = vp_x + (x_norm - vp_x) * (
+            (MULTIROW_ANCHOR_Y_NORM - vp_y) / (y_norm - vp_y)
+        )
+        if -0.12 <= anchor_x <= 1.12:
+            projected.append((anchor_x, x_norm, y_norm, strength))
+    projected.sort(key=lambda item: item[0])
+
+    tolerance = 0.026 if label_mode else 0.050
+    clusters: list[list[tuple[float, float, float, float]]] = []
+    for item in projected:
+        candidates = [
+            (abs(item[0] - float(np.median([point[0] for point in cluster]))), cluster)
+            for cluster in clusters
+        ]
+        candidates = [candidate for candidate in candidates if candidate[0] <= tolerance]
+        if candidates:
+            min(candidates, key=lambda candidate: candidate[0])[1].append(item)
+        else:
+            clusters.append([item])
+
+    minimum_bands = 2 if label_mode else 3
+    rows: list[CropRowLine] = []
+    for cluster in clusters:
+        by_band: dict[float, tuple[float, float, float, float]] = {}
+        for item in cluster:
+            current = by_band.get(item[2])
+            if current is None or item[3] > current[3]:
+                by_band[item[2]] = item
+        observations = list(by_band.values())
+        if len(observations) < minimum_bands:
+            continue
+        coordinates = np.asarray([(item[2], item[1]) for item in observations], dtype=np.float64)
+        keep = np.ones(len(coordinates), dtype=bool)
+        residual_limit = 0.018 if label_mode else 0.045
+        for _ in range(3):
+            if np.count_nonzero(keep) < minimum_bands:
+                break
+            slope, intercept = np.polyfit(coordinates[keep, 0], coordinates[keep, 1], 1)
+            residuals = np.abs(coordinates[:, 1] - (slope * coordinates[:, 0] + intercept))
+            keep = residuals <= residual_limit
+        if np.count_nonzero(keep) < minimum_bands:
+            continue
+        slope, intercept = np.polyfit(coordinates[keep, 0], coordinates[keep, 1], 1)
+        far_x = float(slope * FAR_Y_NORM + intercept)
+        near_x = float(slope * NEAR_Y_NORM + intercept)
+        if not -0.03 <= far_x <= 1.03:
+            continue
+        band_fraction = np.count_nonzero(keep) / len(MULTIROW_BAND_Y_NORMS)
+        mean_strength = float(np.mean([item[3] for item, accepted in zip(observations, keep) if accepted]))
+        confidence = float(np.clip(0.65 * band_fraction + 0.35 * mean_strength, 0.0, 1.0))
+        rows.append(CropRowLine(far_x, near_x, confidence, int(np.count_nonzero(keep))))
+
+    rows.sort(key=lambda row: row.far_x_norm)
+    merged: list[CropRowLine] = []
+    minimum_separation = 0.045 if label_mode else 0.065
+    for row in rows:
+        if merged and abs(row.far_x_norm - merged[-1].far_x_norm) < minimum_separation:
+            if row.confidence > merged[-1].confidence:
+                merged[-1] = row
+        else:
+            merged.append(row)
+    return tuple(merged)
+
+
+def regularize_crop_row_lattice(
+    candidates: tuple[CropRowLine, ...],
+    vanishing_point: tuple[float, float],
+) -> tuple[CropRowLine, ...]:
+    """Fit one ordered, near-regular row family to local line candidates."""
+    if len(candidates) < 3:
+        return candidates
+    positions = np.asarray([row.far_x_norm for row in candidates], dtype=np.float64)
+    best: tuple[float, float, float, np.ndarray, list[int | None]] | None = None
+    for spacing in np.arange(0.14, 0.281, 0.005):
+        for phase in np.arange(-spacing, spacing + 1e-9, 0.005):
+            first = math.ceil((max(0.0, positions.min() - 0.03) - phase) / spacing)
+            last = math.floor((min(1.0, positions.max() + 0.03) - phase) / spacing)
+            if last - first + 1 < 3:
+                continue
+            grid = phase + np.arange(first, last + 1) * spacing
+            selected: list[int | None] = []
+            support_sum = 0.0
+            used: set[int] = set()
+            for grid_x in grid:
+                distances = np.abs(positions - grid_x)
+                order = np.argsort(distances)
+                index = next((int(item) for item in order if int(item) not in used), None)
+                if index is not None and distances[index] <= 0.055:
+                    selected.append(index)
+                    used.add(index)
+                    support_sum += candidates[index].confidence * math.exp(
+                        -float((distances[index] / 0.035) ** 2)
+                    )
+                else:
+                    selected.append(None)
+            if len(used) < 3:
+                continue
+            score = support_sum - 0.35 * (len(candidates) - len(used)) - 0.08 * len(grid)
+            proposal = (score, float(spacing), float(phase), grid, selected)
+            if best is None or proposal[0] > best[0]:
+                best = proposal
+    if best is None:
+        return candidates
+
+    _, _, _, grid, selected = best
+    used_indices = [index for index in selected if index is not None]
+    observed_far = np.asarray([candidates[index].far_x_norm for index in used_indices])
+    observed_near = np.asarray([candidates[index].near_x_norm for index in used_indices])
+    if len(used_indices) >= 2:
+        near_slope, near_intercept = np.polyfit(observed_far, observed_near, 1)
+    else:
+        vp_x, vp_y = vanishing_point
+        denominator = FAR_Y_NORM - vp_y
+        if abs(denominator) < 0.08:
+            return candidates
+        near_slope = (NEAR_Y_NORM - vp_y) / denominator
+        near_intercept = vp_x * (1.0 - near_slope)
+    rows: list[CropRowLine] = []
+    observed_confidences = [
+        candidates[index].confidence for index in selected if index is not None
+    ]
+    inferred_confidence = 0.35 * float(np.median(observed_confidences))
+    for far_x, index in zip(grid, selected):
+        if index is None:
+            near_x = float(near_slope * far_x + near_intercept)
+            confidence = inferred_confidence
+            support_bands = 0
+        else:
+            near_x = candidates[index].near_x_norm + (
+                float(far_x) - candidates[index].far_x_norm
+            )
+            confidence = candidates[index].confidence
+            support_bands = candidates[index].support_band_count
+        rows.append(
+            CropRowLine(float(far_x), float(near_x), confidence, support_bands)
+        )
+    return tuple(rows)
+
+
+def derive_image_corridor(
+    rows: tuple[CropRowLine, ...],
+    *,
+    center_x_norm: float = 0.5,
+    center_exclusion_norm: float = 0.04,
+) -> CropRowLine | None:
+    positions = [(index, row.x_at(CORRIDOR_AUDIT_Y_NORM)) for index, row in enumerate(rows)]
+    if any(abs(position - center_x_norm) <= center_exclusion_norm for _, position in positions):
+        return None
+    left = [(index, position) for index, position in positions if position < center_x_norm]
+    right = [(index, position) for index, position in positions if position > center_x_norm]
+    if not left or not right:
+        return None
+    left_index = max(left, key=lambda item: item[1])[0]
+    right_index = min(right, key=lambda item: item[1])[0]
+    left_row, right_row = rows[left_index], rows[right_index]
+    if left_row.support_band_count < 3 or right_row.support_band_count < 3:
+        return None
+    return CropRowLine(
+        far_x_norm=(left_row.far_x_norm + right_row.far_x_norm) / 2.0,
+        near_x_norm=(left_row.near_x_norm + right_row.near_x_norm) / 2.0,
+        confidence=min(left_row.confidence, right_row.confidence),
+        support_band_count=min(left_row.support_band_count, right_row.support_band_count),
+    )
+
+
+def extract_multirow_geometry(
+    mask: np.ndarray, *, label_mode: bool = False
+) -> MultiRowPrediction:
+    _validate_binary_mask(mask)
+    if not np.any(mask):
+        return MultiRowPrediction(
+            "multiband_perspective_consensus", "reject", (), None, None, None, None, 0.0, "empty mask"
+        )
+    band_points = _band_peak_points(mask, label_mode=label_mode)
+    vanishing_point = _estimate_mask_vanishing_point(mask)
+    if vanishing_point is None:
+        vanishing_point = (0.5, 0.05)
+    if not label_mode:
+        # CRDLD's fixed forward camera places the annotated convergence region
+        # close to the upper image boundary.  Intersections of lower vegetation
+        # blob edges can otherwise pull the Hough estimate deep into the field.
+        # Blend x with the upper-band median and bound y by the train-camera
+        # prior; this is an image-domain prior, not physical calibration.
+        upper_x = [x for x, y, _ in band_points if y <= 0.32]
+        if upper_x:
+            vanishing_point = (
+                0.25 * vanishing_point[0] + 0.75 * float(np.median(upper_x)),
+                float(np.clip(vanishing_point[1], -0.12, 0.04)),
+            )
+    rows = _cluster_band_points(
+        band_points,
+        vanishing_point,
+        label_mode=label_mode,
+    )
+    if not label_mode:
+        rows = regularize_crop_row_lattice(rows, vanishing_point)
+    corridor = derive_image_corridor(rows)
+    positions = [(index, row.x_at(CORRIDOR_AUDIT_Y_NORM)) for index, row in enumerate(rows)]
+    left_index = max((item for item in positions if item[1] < 0.46), key=lambda item: item[1], default=(None, 0.0))[0]
+    right_index = min((item for item in positions if item[1] > 0.54), key=lambda item: item[1], default=(None, 0.0))[0]
+    if not rows:
+        status, reason = "reject", "no stable multi-band row hypotheses"
+    elif corridor is None:
+        status, reason = "degraded", "crop rows found but image corridor is ambiguous or blocked"
+        left_index = right_index = None
+    else:
+        status, reason = "valid", "ordered multi-band rows and adjacent image corridor available"
+    confidence = float(np.mean([row.confidence for row in rows])) if rows else 0.0
+    return MultiRowPrediction(
+        "multiband_perspective_consensus",
+        status,
+        rows,
+        vanishing_point,
+        left_index,
+        right_index,
+        corridor,
+        confidence,
+        reason,
+    )
+
+
+def match_ordered_crop_rows(
+    predicted: tuple[CropRowLine, ...],
+    reference: tuple[CropRowLine, ...],
+    *,
+    max_position_error_norm: float = 0.06,
+) -> dict[str, Any]:
+    """Match row identity by ordered anchor position; score heading afterwards."""
+    pred = tuple(sorted(predicted, key=lambda row: row.far_x_norm))
+    ref = tuple(sorted(reference, key=lambda row: row.far_x_norm))
+    n_pred, n_ref = len(pred), len(ref)
+    dp = np.full((n_pred + 1, n_ref + 1), np.inf, dtype=np.float64)
+    action = np.full((n_pred + 1, n_ref + 1), "", dtype=object)
+    dp[0, 0] = 0.0
+    for i in range(n_pred + 1):
+        for j in range(n_ref + 1):
+            current = dp[i, j]
+            if not np.isfinite(current):
+                continue
+            if i < n_pred and current + 1.0 < dp[i + 1, j]:
+                dp[i + 1, j], action[i + 1, j] = current + 1.0, "skip_pred"
+            if j < n_ref and current + 1.0 < dp[i, j + 1]:
+                dp[i, j + 1], action[i, j + 1] = current + 1.0, "skip_ref"
+            if i < n_pred and j < n_ref:
+                position_error = abs(pred[i].far_x_norm - ref[j].far_x_norm)
+                if position_error <= max_position_error_norm:
+                    cost = position_error / max_position_error_norm
+                    if current + cost < dp[i + 1, j + 1]:
+                        dp[i + 1, j + 1], action[i + 1, j + 1] = current + cost, "match"
+
+    pairs: list[tuple[int, int]] = []
+    i, j = n_pred, n_ref
+    while i or j:
+        step = action[i, j]
+        if step == "match":
+            pairs.append((i - 1, j - 1))
+            i, j = i - 1, j - 1
+        elif step == "skip_pred":
+            i -= 1
+        elif step == "skip_ref":
+            j -= 1
+        else:
+            break
+    pairs.reverse()
+    position_errors = [abs(pred[i].far_x_norm - ref[j].far_x_norm) for i, j in pairs]
+    heading_errors = [abs(pred[i].heading_deg - ref[j].heading_deg) for i, j in pairs]
+    return {
+        "predicted_count": n_pred,
+        "reference_count": n_ref,
+        "matched_count": len(pairs),
+        "pairs": pairs,
+        "precision": len(pairs) / n_pred if n_pred else (1.0 if not n_ref else 0.0),
+        "recall": len(pairs) / n_ref if n_ref else (1.0 if not n_pred else 0.0),
+        "position_mae_norm": float(np.mean(position_errors)) if position_errors else None,
+        "heading_mae_deg": float(np.mean(heading_errors)) if heading_errors else None,
+    }
 
 
 def _validate_binary_mask(mask: np.ndarray) -> None:
@@ -1318,6 +1945,919 @@ def run_day63_study(
     return result
 
 
+def _corridor_indices(rows: tuple[CropRowLine, ...]) -> tuple[int, int] | None:
+    if derive_image_corridor(rows) is None:
+        return None
+    positions = [(index, row.x_at(CORRIDOR_AUDIT_Y_NORM)) for index, row in enumerate(rows)]
+    if any(abs(position - 0.5) <= 0.04 for _, position in positions):
+        return None
+    left = [(index, position) for index, position in positions if position < 0.5]
+    right = [(index, position) for index, position in positions if position > 0.5]
+    if not left or not right:
+        return None
+    return max(left, key=lambda item: item[1])[0], min(right, key=lambda item: item[1])[0]
+
+
+def _evaluate_multirow_split(
+    root: Path, stems: list[str]
+) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, tuple[np.ndarray, np.ndarray, MultiRowPrediction, MultiRowPrediction]]]:
+    records: list[dict[str, Any]] = []
+    review: dict[str, tuple[np.ndarray, np.ndarray, MultiRowPrediction, MultiRowPrediction]] = {}
+    for stem in stems:
+        image, label = _read_pair(root / "image", root / "label", stem)
+        mask = _frozen_day62_mask(image)
+        reference = extract_multirow_geometry(label, label_mode=True)
+        start = time.perf_counter()
+        prediction = extract_multirow_geometry(mask, label_mode=False)
+        runtime_ms = (time.perf_counter() - start) * 1000.0
+        matching = match_ordered_crop_rows(prediction.rows, reference.rows)
+        mapping = {pred_index: ref_index for pred_index, ref_index in matching["pairs"]}
+        pred_corridor_indices = _corridor_indices(prediction.rows)
+        ref_corridor_indices = _corridor_indices(reference.rows)
+        boundary_pair_correct = False
+        corridor_center_error = None
+        if pred_corridor_indices is not None and ref_corridor_indices is not None:
+            boundary_pair_correct = (
+                mapping.get(pred_corridor_indices[0]) == ref_corridor_indices[0]
+                and mapping.get(pred_corridor_indices[1]) == ref_corridor_indices[1]
+            )
+            assert prediction.corridor_center is not None
+            assert reference.corridor_center is not None
+            corridor_center_error = abs(
+                prediction.corridor_center.near_x_norm
+                - reference.corridor_center.near_x_norm
+            )
+        record = {
+            "stem": stem,
+            "predicted_count": matching["predicted_count"],
+            "reference_count": matching["reference_count"],
+            "matched_count": matching["matched_count"],
+            "precision": matching["precision"],
+            "recall": matching["recall"],
+            "matched_position_mae_norm": matching["position_mae_norm"],
+            "matched_heading_mae_deg": matching["heading_mae_deg"],
+            "prediction_status": prediction.status,
+            "reference_corridor_available": ref_corridor_indices is not None,
+            "prediction_corridor_available": pred_corridor_indices is not None,
+            "boundary_pair_correct": boundary_pair_correct,
+            "corridor_center_error_norm": corridor_center_error,
+            "runtime_ms": runtime_ms,
+        }
+        records.append(record)
+        review[stem] = (image, mask, prediction, reference)
+
+    total_predicted = sum(record["predicted_count"] for record in records)
+    total_reference = sum(record["reference_count"] for record in records)
+    total_matched = sum(record["matched_count"] for record in records)
+    matched_weight = max(1, total_matched)
+    position_sum = sum(
+        record["matched_position_mae_norm"] * record["matched_count"]
+        for record in records
+        if record["matched_position_mae_norm"] is not None
+    )
+    heading_sum = sum(
+        record["matched_heading_mae_deg"] * record["matched_count"]
+        for record in records
+        if record["matched_heading_mae_deg"] is not None
+    )
+    supported = [record for record in records if record["reference_corridor_available"]]
+    unsupported = [record for record in records if not record["reference_corridor_available"]]
+    corridor_errors = [
+        record["corridor_center_error_norm"]
+        for record in supported
+        if record["corridor_center_error_norm"] is not None
+    ]
+    summary = {
+        "frame_count": len(records),
+        "predicted_row_count": total_predicted,
+        "reference_row_count": total_reference,
+        "matched_row_count": total_matched,
+        "row_detection_precision": total_matched / total_predicted if total_predicted else 0.0,
+        "row_detection_recall": total_matched / total_reference if total_reference else 0.0,
+        "matched_bottom_position_mae_norm": position_sum / matched_weight,
+        "matched_heading_mae_deg": heading_sum / matched_weight,
+        "reference_corridor_frame_count": len(supported),
+        "corridor_boundary_pair_accuracy": (
+            sum(record["boundary_pair_correct"] for record in supported) / len(supported)
+            if supported else 0.0
+        ),
+        "corridor_center_mae_norm": float(np.mean(corridor_errors)) if corridor_errors else None,
+        "supported_valid_recall": (
+            sum(record["prediction_status"] == "valid" for record in supported) / len(supported)
+            if supported else 0.0
+        ),
+        "unsafe_false_valid_rate": (
+            sum(record["prediction_status"] == "valid" for record in unsupported) / len(unsupported)
+            if unsupported else 0.0
+        ),
+        "runtime_median_ms": float(np.median([record["runtime_ms"] for record in records])) if records else 0.0,
+    }
+    summary["gates"] = {
+        "row_detection_precision_at_least_0_80": summary["row_detection_precision"] >= 0.80,
+        "row_detection_recall_at_least_0_80": summary["row_detection_recall"] >= 0.80,
+        "matched_position_mae_at_most_0_05": summary["matched_bottom_position_mae_norm"] <= 0.05,
+        "matched_heading_mae_at_most_5_deg": summary["matched_heading_mae_deg"] <= 5.0,
+        "corridor_boundary_pair_accuracy_at_least_0_80": summary["corridor_boundary_pair_accuracy"] >= 0.80,
+        "corridor_center_mae_at_most_0_05": summary["corridor_center_mae_norm"] is not None and summary["corridor_center_mae_norm"] <= 0.05,
+        "supported_valid_recall_at_least_0_80": summary["supported_valid_recall"] >= 0.80,
+        "unsafe_false_valid_rate_at_most_0_05": summary["unsafe_false_valid_rate"] <= 0.05,
+        "runtime_median_at_most_50_ms": summary["runtime_median_ms"] <= 50.0,
+    }
+    summary["all_gates_passed"] = all(summary["gates"].values())
+    return summary, records, review
+
+
+def _draw_multirow_prediction(
+    image: np.ndarray,
+    prediction: MultiRowPrediction,
+    reference: MultiRowPrediction,
+) -> np.ndarray:
+    output = image.copy()
+    height, width = output.shape[:2]
+
+    def draw_rows(rows: tuple[CropRowLine, ...], color: tuple[int, int, int], thickness: int) -> None:
+        for row in rows:
+            cv2.line(
+                output,
+                (round(row.far_x_norm * (width - 1)), round(FAR_Y_NORM * (height - 1))),
+                (round(row.near_x_norm * (width - 1)), round(NEAR_Y_NORM * (height - 1))),
+                color,
+                thickness,
+                cv2.LINE_AA,
+            )
+
+    draw_rows(reference.rows, (255, 0, 255), 3)
+    draw_rows(prediction.rows, (0, 255, 255), 2)
+    if prediction.corridor_center is not None:
+        draw_rows((prediction.corridor_center,), (255, 255, 0), 3)
+    cv2.putText(
+        output,
+        f"pred={len(prediction.rows)} gt={len(reference.rows)} {prediction.status}",
+        (8, 22),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.55,
+        (255, 255, 255),
+        1,
+        cv2.LINE_AA,
+    )
+    return output
+
+
+def _write_multirow_contact_sheet(
+    path: Path,
+    review: dict[str, tuple[np.ndarray, np.ndarray, MultiRowPrediction, MultiRowPrediction]],
+    records: list[dict[str, Any]],
+    count: int,
+) -> list[str]:
+    ranked = sorted(
+        records,
+        key=lambda record: (record["recall"], record["precision"], -(record["matched_heading_mae_deg"] or 99.0)),
+    )
+    selected = ranked[: max(1, count // 2)] + ranked[-max(1, count - count // 2) :]
+    seen: set[str] = set()
+    rows: list[np.ndarray] = []
+    stems: list[str] = []
+    for record in selected:
+        stem = record["stem"]
+        if stem in seen:
+            continue
+        seen.add(stem)
+        stems.append(stem)
+        image, mask, prediction, reference = review[stem]
+        mask_bgr = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        overlay = _draw_multirow_prediction(image, prediction, reference)
+        rows.append(np.hstack((image, mask_bgr, overlay)))
+    if rows:
+        cv2.imwrite(str(path), np.vstack(rows))
+    return stems
+
+
+def run_day63_multirow_study(
+    *,
+    train_root: Path,
+    train_manifest: Path,
+    validation_root: Path,
+    validation_manifest: Path,
+    output_dir: Path,
+    comparison_count: int = 8,
+) -> dict[str, Any]:
+    """Run the scoped multi-row revision without touching frozen external data."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    train_stems = read_manifest_stems(train_manifest, "train_development")
+    validation_stems = read_manifest_stems(
+        validation_manifest, "validation_development"
+    )
+    train_summary, train_records, _ = _evaluate_multirow_split(train_root, train_stems)
+    validation_summary, validation_records, review = _evaluate_multirow_split(
+        validation_root, validation_stems
+    )
+    _write_csv(output_dir / "geometry_metrics_multirow.csv", validation_records)
+    review_stems = _write_multirow_contact_sheet(
+        output_dir / "geometry_comparison_multirow.jpg",
+        review,
+        validation_records,
+        comparison_count,
+    )
+    result = {
+        "schema_version": 1,
+        "marker": "DAY63_MULTIROW_REVISION_COMPLETE",
+        "method": "multiband_perspective_consensus",
+        "day61_color_retuned": False,
+        "day62_morphology_retuned": False,
+        "single_row_v2_preserved_as_baseline": True,
+        "label_identity_scope": "derived_ordered_matching",
+        "label_limitation": "CRDLD merges all centerlines in one binary JPEG mask and provides no instance IDs",
+        "corridor_scope": "image proxy only when both sides exist and no crop row occupies the camera-center exclusion band",
+        "train_development": train_summary,
+        "reused_validation_development": validation_summary,
+        "review_stems": review_stems,
+        "same_source_internal_benchmark_accessed": False,
+        "frozen_external_accessed": False,
+        "reject_aware_evaluation_available": False,
+        "real_robot_corridor_established": False,
+    }
+    (output_dir / "day63_results_multirow.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
+def _load_centerline_samples(
+    root: Path,
+    stems: list[str],
+    *,
+    partition: str,
+    resolution: int,
+) -> list[dict[str, Any]]:
+    samples: list[dict[str, Any]] = []
+    for stem in stems:
+        image, label = _read_pair(root / "image", root / "label", stem)
+        mask = _frozen_day62_mask(image)
+        features, target = prepare_centerline_tensor(
+            image, mask, label, resolution=resolution
+        )
+        samples.append(
+            {
+                "key": f"{partition}/{stem}",
+                "stem": stem,
+                "partition": partition,
+                "image": image,
+                "mask": mask,
+                "features": features,
+                "target": target,
+                "reference": extract_multirow_geometry(label, label_mode=True),
+            }
+        )
+    return samples
+
+
+def _train_centerline_model(
+    features: np.ndarray,
+    targets: np.ndarray,
+    *,
+    epochs: int,
+    seed: int,
+    device: str,
+    base_channels: int = 16,
+) -> TinyRowUNet:
+    torch.manual_seed(seed)
+    if device.startswith("cuda"):
+        torch.cuda.manual_seed_all(seed)
+    model = TinyRowUNet(base_channels=base_channels).to(device)
+    target_float = targets.astype(np.float32)
+    positives = float(target_float.sum())
+    negatives = float(target_float.size - positives)
+    positive_weight = min(20.0, negatives / max(1.0, positives))
+    bce = nn.BCEWithLogitsLoss(
+        pos_weight=torch.tensor([positive_weight], dtype=torch.float32, device=device)
+    )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
+    dataset = torch.utils.data.TensorDataset(
+        torch.from_numpy(features), torch.from_numpy(targets)
+    )
+    loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=24 if device.startswith("cuda") else 8,
+        shuffle=True,
+        generator=torch.Generator().manual_seed(seed),
+        num_workers=0,
+    )
+    for _ in range(epochs):
+        model.train()
+        for inputs, labels in loader:
+            inputs = inputs.to(device=device, dtype=torch.float32) / 255.0
+            labels = labels.to(device=device, dtype=torch.float32)
+            logits = model(inputs)
+            probability = torch.sigmoid(logits)
+            dice_loss = 1.0 - (
+                2.0 * (probability * labels).sum(dim=(1, 2, 3)) + 1.0
+            ) / (
+                (probability + labels).sum(dim=(1, 2, 3)) + 1.0
+            )
+            loss = bce(logits, labels) + dice_loss.mean()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+    return model
+
+
+def _predict_centerline_heatmaps(
+    model: TinyRowUNet,
+    features: np.ndarray,
+    *,
+    device: str,
+) -> tuple[np.ndarray, float]:
+    model.eval()
+    batches: list[np.ndarray] = []
+    start = time.perf_counter()
+    with torch.no_grad():
+        for index in range(0, len(features), 32):
+            inputs = torch.from_numpy(features[index : index + 32]).to(
+                device=device, dtype=torch.float32
+            ) / 255.0
+            batches.append(torch.sigmoid(model(inputs)).cpu().numpy()[:, 0])
+    elapsed_ms = (time.perf_counter() - start) * 1000.0
+    return np.concatenate(batches), elapsed_ms / max(1, len(features))
+
+
+def _evaluate_centerline_predictions(
+    samples: list[dict[str, Any]],
+    probabilities: list[np.ndarray],
+    runtimes_ms: list[float | None],
+    *,
+    peak_height: float = 0.20,
+    peak_prominence: float = 0.05,
+    peak_distance_norm: float = 0.025,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    records: list[dict[str, Any]] = []
+    for sample, probability, runtime_ms in zip(samples, probabilities, runtimes_ms):
+        prediction = decode_centerline_heatmap(
+            probability,
+            peak_height=peak_height,
+            peak_prominence=peak_prominence,
+            peak_distance_norm=peak_distance_norm,
+        )
+        reference = sample["reference"]
+        matching = match_ordered_crop_rows(
+            prediction.rows, reference.rows, max_position_error_norm=0.05
+        )
+        mapping = {left: right for left, right in matching["pairs"]}
+        predicted_corridor = _corridor_indices(prediction.rows)
+        reference_corridor = _corridor_indices(reference.rows)
+        boundary_correct = False
+        corridor_error = None
+        if predicted_corridor is not None and reference_corridor is not None:
+            boundary_correct = (
+                mapping.get(predicted_corridor[0]) == reference_corridor[0]
+                and mapping.get(predicted_corridor[1]) == reference_corridor[1]
+            )
+            if prediction.corridor_center is not None and reference.corridor_center is not None:
+                corridor_error = abs(
+                    prediction.corridor_center.near_x_norm
+                    - reference.corridor_center.near_x_norm
+                )
+        records.append(
+            {
+                "key": sample["key"],
+                "stem": sample["stem"],
+                "partition": sample["partition"],
+                "predicted_count": matching["predicted_count"],
+                "reference_count": matching["reference_count"],
+                "matched_count": matching["matched_count"],
+                "precision": matching["precision"],
+                "recall": matching["recall"],
+                "matched_position_mae_norm": matching["position_mae_norm"],
+                "matched_heading_mae_deg": matching["heading_mae_deg"],
+                "prediction_status": prediction.status,
+                "reference_corridor_available": reference_corridor is not None,
+                "prediction_corridor_available": predicted_corridor is not None,
+                "boundary_pair_correct": boundary_correct,
+                "corridor_center_error_norm": corridor_error,
+                "runtime_ms": runtime_ms,
+            }
+        )
+        sample["centerline_prediction"] = prediction
+
+    total_predicted = sum(row["predicted_count"] for row in records)
+    total_reference = sum(row["reference_count"] for row in records)
+    total_matched = sum(row["matched_count"] for row in records)
+    position_sum = sum(
+        (row["matched_position_mae_norm"] or 0.0) * row["matched_count"]
+        for row in records
+    )
+    heading_sum = sum(
+        (row["matched_heading_mae_deg"] or 0.0) * row["matched_count"]
+        for row in records
+    )
+    supported = [row for row in records if row["reference_corridor_available"]]
+    unsupported = [row for row in records if not row["reference_corridor_available"]]
+    corridor_errors = [
+        row["corridor_center_error_norm"]
+        for row in supported
+        if row["corridor_center_error_norm"] is not None
+    ]
+    summary = {
+        "frame_count": len(records),
+        "predicted_row_count": total_predicted,
+        "reference_row_count": total_reference,
+        "matched_row_count": total_matched,
+        "row_detection_precision": total_matched / max(1, total_predicted),
+        "row_detection_recall": total_matched / max(1, total_reference),
+        "matched_position_mae_norm": position_sum / max(1, total_matched),
+        "matched_heading_mae_deg": heading_sum / max(1, total_matched),
+        "reference_corridor_frame_count": len(supported),
+        "corridor_boundary_pair_accuracy": (
+            sum(row["boundary_pair_correct"] for row in supported) / max(1, len(supported))
+        ),
+        "corridor_center_mae_norm": (
+            float(np.mean(corridor_errors)) if corridor_errors else None
+        ),
+        "supported_valid_recall": (
+            sum(row["prediction_status"] == "valid" for row in supported)
+            / max(1, len(supported))
+        ),
+        "unsafe_false_valid_rate": (
+            sum(row["prediction_status"] == "valid" for row in unsupported)
+            / max(1, len(unsupported))
+        ),
+        "runtime_median_ms": (
+            float(np.median([value for value in runtimes_ms if value is not None]))
+            if any(value is not None for value in runtimes_ms)
+            else None
+        ),
+    }
+    summary["day63_geometry_gates"] = {
+        "precision_at_least_0_80": summary["row_detection_precision"] >= 0.80,
+        "recall_at_least_0_80": summary["row_detection_recall"] >= 0.80,
+        "position_mae_at_most_0_05": summary["matched_position_mae_norm"] <= 0.05,
+        "heading_mae_at_most_5_deg": summary["matched_heading_mae_deg"] <= 5.0,
+    }
+    summary["day63_geometry_gate_passed"] = all(
+        summary["day63_geometry_gates"].values()
+    )
+    return summary, records
+
+
+def run_day63_centerline_study(
+    *,
+    train_root: Path,
+    train_manifest: Path,
+    validation_root: Path,
+    validation_manifest: Path,
+    output_dir: Path,
+    comparison_count: int = 8,
+    fold_count: int = 3,
+    epochs: int = 12,
+    resolution: int = 128,
+) -> dict[str, Any]:
+    """Cross-fit a learned multi-row heatmap on all declared development data."""
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    train_stems = read_manifest_stems(train_manifest, "train_development")
+    validation_stems = read_manifest_stems(
+        validation_manifest, "validation_development"
+    )
+    samples = _load_centerline_samples(
+        train_root, train_stems, partition="train_development", resolution=resolution
+    ) + _load_centerline_samples(
+        validation_root,
+        validation_stems,
+        partition="reused_validation_development",
+        resolution=resolution,
+    )
+    by_key = {sample["key"]: sample for sample in samples}
+    folds = split_crossfit_folds(list(by_key), fold_count=fold_count)
+    probability_by_key: dict[str, np.ndarray] = {}
+    runtime_by_key: dict[str, float] = {}
+    fold_records: list[dict[str, Any]] = []
+    all_features = np.asarray([sample["features"] for sample in samples], dtype=np.uint8)
+    all_targets = np.asarray([sample["target"] for sample in samples], dtype=np.uint8)
+    key_to_index = {sample["key"]: index for index, sample in enumerate(samples)}
+    for fold_index, held_keys in enumerate(folds):
+        held_set = set(held_keys)
+        fit_indices = [
+            index for index, sample in enumerate(samples) if sample["key"] not in held_set
+        ]
+        held_indices = [key_to_index[key] for key in held_keys]
+        model = _train_centerline_model(
+            all_features[fit_indices],
+            all_targets[fit_indices],
+            epochs=epochs,
+            seed=6300 + fold_index,
+            device=device,
+        )
+        probabilities, runtime_ms = _predict_centerline_heatmaps(
+            model, all_features[held_indices], device=device
+        )
+        for index, probability in zip(held_indices, probabilities):
+            key = samples[index]["key"]
+            probability_by_key[key] = probability
+            runtime_by_key[key] = runtime_ms
+        fold_records.append(
+            {
+                "fold": fold_index,
+                "fit_count": len(fit_indices),
+                "held_out_count": len(held_indices),
+            }
+        )
+        del model
+        if device.startswith("cuda"):
+            torch.cuda.empty_cache()
+
+    ordered_probabilities = [probability_by_key[sample["key"]] for sample in samples]
+    ordered_runtimes = [runtime_by_key[sample["key"]] for sample in samples]
+    overall_summary, records = _evaluate_centerline_predictions(
+        samples, ordered_probabilities, ordered_runtimes
+    )
+    partition_summaries: dict[str, Any] = {}
+    for partition in ("train_development", "reused_validation_development"):
+        indices = [
+            index for index, sample in enumerate(samples) if sample["partition"] == partition
+        ]
+        partition_summaries[partition], _ = _evaluate_centerline_predictions(
+            [samples[index] for index in indices],
+            [ordered_probabilities[index] for index in indices],
+            [ordered_runtimes[index] for index in indices],
+        )
+
+    final_model = _train_centerline_model(
+        all_features,
+        all_targets,
+        epochs=epochs,
+        seed=6399,
+        device=device,
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+    torch.save(
+        {
+            "state_dict": final_model.cpu().state_dict(),
+            "resolution": resolution,
+            "base_channels": 16,
+            "peak_height": 0.20,
+            "peak_prominence": 0.05,
+            "peak_distance_norm": 0.025,
+        },
+        output_dir / "day63_multirow_centerline_model.pt",
+    )
+    _write_csv(output_dir / "geometry_metrics_centerline_oof.csv", records)
+    ranked = sorted(records, key=lambda row: (row["recall"], row["precision"]))
+    review_rows = ranked[: comparison_count // 2] + ranked[-(comparison_count - comparison_count // 2) :]
+    contact_rows: list[np.ndarray] = []
+    review_stems: list[str] = []
+    for row in review_rows:
+        sample = by_key[row["key"]]
+        review_stems.append(row["key"])
+        overlay = _draw_multirow_prediction(
+            sample["image"], sample["centerline_prediction"], sample["reference"]
+        )
+        mask_bgr = cv2.cvtColor(sample["mask"], cv2.COLOR_GRAY2BGR)
+        contact_rows.append(np.hstack((sample["image"], mask_bgr, overlay)))
+    if contact_rows:
+        cv2.imwrite(
+            str(output_dir / "geometry_comparison_centerline_oof.jpg"),
+            np.vstack(contact_rows),
+        )
+    result = {
+        "schema_version": 2,
+        "marker": "DAY63_MULTIROW_RELEARNING_COMPLETE",
+        "method": "three_fold_cross_fitted_tiny_unet_centerline_heatmap",
+        "development_selection_disclosure": "decoder settings were selected after the reused validation-development split had already been accessed; OOF labels are excluded from model fitting but this is not untouched confirmation",
+        "folds": fold_records,
+        "overall_out_of_fold": overall_summary,
+        "partition_out_of_fold": partition_summaries,
+        "review_stems": review_stems,
+        "day61_color_retuned": False,
+        "day62_morphology_retuned": False,
+        "crdld_test_data_accessed": False,
+        "frozen_external_accessed": False,
+        "real_robot_corridor_established": False,
+        "corridor_limitation": "corridor metrics are image proxies derived from merged row labels; robot footprint, camera calibration, traversability, headland and negative-scene ground truth remain unavailable",
+    }
+    (output_dir / "day63_results_centerline_oof.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
+def finalize_day63_resnet_oof_from_cache(
+    *,
+    train_root: Path,
+    train_manifest: Path,
+    validation_root: Path,
+    validation_manifest: Path,
+    output_dir: Path,
+    train_cache: Path,
+    validation_cache: Path,
+    comparison_count: int = 8,
+) -> dict[str, Any]:
+    """Assemble audited results from label-excluding ResNet18 OOF heatmaps."""
+    train_stems = read_manifest_stems(train_manifest, "train_development")
+    validation_stems = read_manifest_stems(
+        validation_manifest, "validation_development"
+    )
+    train_samples = _load_centerline_samples(
+        train_root,
+        train_stems,
+        partition="train_development",
+        resolution=192,
+    )
+    validation_samples = _load_centerline_samples(
+        validation_root,
+        validation_stems,
+        partition="reused_validation_development",
+        resolution=192,
+    )
+
+    def read_cache(path: Path, expected_stems: list[str]) -> list[np.ndarray]:
+        with np.load(path) as payload:
+            cached_stems = payload["stems"].astype(str).tolist()
+            if cached_stems != expected_stems:
+                raise ValueError(f"OOF cache stem order mismatch: {path}")
+            probabilities = payload["probabilities"].astype(np.float32)
+        if probabilities.shape != (len(expected_stems), 192, 192):
+            raise ValueError(f"unexpected OOF probability shape: {probabilities.shape}")
+        return list(probabilities)
+
+    train_probabilities = read_cache(train_cache, train_stems)
+    validation_probabilities = read_cache(validation_cache, validation_stems)
+    decoder = {
+        "peak_height": 0.20,
+        "peak_prominence": 0.03,
+        "peak_distance_norm": 0.06,
+    }
+    train_summary, train_records = _evaluate_centerline_predictions(
+        train_samples,
+        train_probabilities,
+        [None] * len(train_samples),
+        **decoder,
+    )
+    validation_summary, validation_records = _evaluate_centerline_predictions(
+        validation_samples,
+        validation_probabilities,
+        [None] * len(validation_samples),
+        **decoder,
+    )
+    all_samples = train_samples + validation_samples
+    all_probabilities = train_probabilities + validation_probabilities
+    overall_summary, all_records = _evaluate_centerline_predictions(
+        all_samples,
+        all_probabilities,
+        [None] * len(all_samples),
+        **decoder,
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+    _write_csv(output_dir / "geometry_metrics_resnet18_oof.csv", all_records)
+    ranked = sorted(
+        validation_records, key=lambda row: (row["recall"], row["precision"])
+    )
+    selected = (
+        ranked[: comparison_count // 2]
+        + ranked[-(comparison_count - comparison_count // 2) :]
+    )
+    by_key = {sample["key"]: sample for sample in validation_samples}
+    contact_rows: list[np.ndarray] = []
+    review_stems: list[str] = []
+    for row in selected:
+        sample = by_key[row["key"]]
+        review_stems.append(row["key"])
+        overlay = _draw_multirow_prediction(
+            sample["image"], sample["centerline_prediction"], sample["reference"]
+        )
+        mask_bgr = cv2.cvtColor(sample["mask"], cv2.COLOR_GRAY2BGR)
+        contact_rows.append(np.hstack((sample["image"], mask_bgr, overlay)))
+    if contact_rows:
+        cv2.imwrite(
+            str(output_dir / "geometry_comparison_resnet18_oof.jpg"),
+            np.vstack(contact_rows),
+        )
+    result = {
+        "schema_version": 3,
+        "marker": "DAY63_MULTIROW_RELEARNING_COMPLETE",
+        "method": "partition_matched_three_fold_resnet18_centerline_oof",
+        "input": "RGB plus frozen Day62 morphology mask",
+        "decoder": decoder,
+        "train_development_oof": train_summary,
+        "reused_validation_development_oof": validation_summary,
+        "overall_oof": overall_summary,
+        "review_stems": review_stems,
+        "selection_disclosure": "architecture and decoder were iterated after aggregate access to both development partitions; every reported OOF image label was excluded from its fold model, but these are development results, not untouched confirmation",
+        "train_protocol": "three folds; each train-development fold model starts from local ImageNet ResNet18 weights and trains 10 epochs on the other two folds",
+        "validation_protocol": "three folds; each validation fold model starts from the train-development model and fine-tunes 8 epochs on the other two validation folds",
+        "day61_color_retuned": False,
+        "day62_morphology_retuned": False,
+        "crdld_test_data_accessed": False,
+        "frozen_external_accessed": False,
+        "real_robot_corridor_established": False,
+        "corridor_limitation": "image-space proxy only; merged masks do not label robot footprint, traversability, headlands, negative scenes or calibrated ground geometry",
+        "runtime_limitation": "OOF heatmaps were cached before the final audit; runtime is re-benchmarked separately rather than reconstructed",
+    }
+    (output_dir / "day63_results_resnet18_oof.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
+def _fit_resnet18_centerline_model(
+    features: np.ndarray,
+    targets: np.ndarray,
+    *,
+    pretrained_state: dict[str, torch.Tensor] | None,
+    initial_state: dict[str, torch.Tensor] | None,
+    epochs: int,
+    seed: int,
+    device: str,
+    learning_rate: float,
+) -> ResNet18RowUNet:
+    torch.manual_seed(seed)
+    model = ResNet18RowUNet(pretrained_state=pretrained_state).to(device)
+    if initial_state is not None:
+        model.load_state_dict(initial_state)
+    target_float = targets.astype(np.float32)
+    positives = float(target_float.sum())
+    positive_weight = min(
+        15.0, float(target_float.size - positives) / max(1.0, positives)
+    )
+    bce = nn.BCEWithLogitsLoss(
+        pos_weight=torch.tensor([positive_weight], device=device)
+    )
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=learning_rate, weight_decay=1e-4
+    )
+    loader = torch.utils.data.DataLoader(
+        torch.utils.data.TensorDataset(
+            torch.from_numpy(features), torch.from_numpy(targets)
+        ),
+        batch_size=10 if device.startswith("cuda") else 2,
+        shuffle=True,
+        generator=torch.Generator().manual_seed(seed),
+        num_workers=0,
+    )
+    for _ in range(epochs):
+        model.train()
+        for inputs, labels in loader:
+            inputs = inputs.to(device=device, dtype=torch.float32) / 255.0
+            labels = labels.to(device=device, dtype=torch.float32)
+            logits = model(inputs)
+            probability = torch.sigmoid(logits)
+            dice_loss = 1.0 - (
+                2.0 * (probability * labels).sum(dim=(1, 2, 3)) + 1.0
+            ) / ((probability + labels).sum(dim=(1, 2, 3)) + 1.0)
+            loss = bce(logits, labels) + dice_loss.mean()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+    return model
+
+
+def _generate_resnet18_oof_cache(
+    samples: list[dict[str, Any]],
+    *,
+    cache_path: Path,
+    pretrained_state: dict[str, torch.Tensor] | None,
+    initial_state: dict[str, torch.Tensor] | None,
+    epochs: int,
+    learning_rate: float,
+    seed: int,
+    device: str,
+) -> None:
+    features = np.asarray([sample["features"] for sample in samples], dtype=np.uint8)
+    targets = np.asarray([sample["target"] for sample in samples], dtype=np.uint8)
+    stems = [sample["stem"] for sample in samples]
+    folds = split_crossfit_folds(stems, fold_count=3)
+    stem_to_index = {stem: index for index, stem in enumerate(stems)}
+    probabilities = np.zeros((len(samples), 192, 192), dtype=np.float32)
+    for fold_index, held_stems in enumerate(folds):
+        held_indices = [stem_to_index[stem] for stem in held_stems]
+        held_set = set(held_indices)
+        fit_indices = [index for index in range(len(samples)) if index not in held_set]
+        model = _fit_resnet18_centerline_model(
+            features[fit_indices],
+            targets[fit_indices],
+            pretrained_state=pretrained_state,
+            initial_state=initial_state,
+            epochs=epochs,
+            seed=seed + fold_index,
+            device=device,
+            learning_rate=learning_rate,
+        )
+        predicted, _ = _predict_centerline_heatmaps(
+            model, features[held_indices], device=device
+        )
+        probabilities[np.asarray(held_indices)] = predicted
+        del model
+        if device.startswith("cuda"):
+            torch.cuda.empty_cache()
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        cache_path,
+        probabilities=probabilities,
+        stems=np.asarray([sample["stem"] for sample in samples]),
+    )
+
+
+def run_day63_resnet18_oof_study(
+    *,
+    train_root: Path,
+    train_manifest: Path,
+    validation_root: Path,
+    validation_manifest: Path,
+    output_dir: Path,
+    pretrained_weights: Path,
+    comparison_count: int = 8,
+    reuse_existing_cache: bool = True,
+) -> dict[str, Any]:
+    """Reproduce the partition-matched ResNet18 OOF study and final audit."""
+    if not pretrained_weights.is_file():
+        raise ValueError(f"missing local ResNet18 weights: {pretrained_weights}")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    pretrained_state = torch.load(
+        pretrained_weights, map_location="cpu", weights_only=True
+    )
+    train_stems = read_manifest_stems(train_manifest, "train_development")
+    validation_stems = read_manifest_stems(
+        validation_manifest, "validation_development"
+    )
+    train_samples = _load_centerline_samples(
+        train_root,
+        train_stems,
+        partition="train_development",
+        resolution=192,
+    )
+    validation_samples = _load_centerline_samples(
+        validation_root,
+        validation_stems,
+        partition="reused_validation_development",
+        resolution=192,
+    )
+    train_cache = output_dir / "day63_resnet18_train_oof_probabilities.npz"
+    validation_cache = output_dir / "day63_resnet18_validation_oof_probabilities.npz"
+    final_model_path = output_dir / "day63_resnet18_centerline_model.pt"
+    if not reuse_existing_cache or not train_cache.is_file():
+        _generate_resnet18_oof_cache(
+            train_samples,
+            cache_path=train_cache,
+            pretrained_state=pretrained_state,
+            initial_state=None,
+            epochs=10,
+            learning_rate=3e-4,
+            seed=6500,
+            device=device,
+        )
+    if not reuse_existing_cache or not final_model_path.is_file():
+        features = np.asarray(
+            [sample["features"] for sample in train_samples], dtype=np.uint8
+        )
+        targets = np.asarray(
+            [sample["target"] for sample in train_samples], dtype=np.uint8
+        )
+        train_model = _fit_resnet18_centerline_model(
+            features,
+            targets,
+            pretrained_state=pretrained_state,
+            initial_state=None,
+            epochs=12,
+            seed=63,
+            device=device,
+            learning_rate=3e-4,
+        )
+        train_state = {key: value.cpu() for key, value in train_model.state_dict().items()}
+        torch.save(
+            {
+                "state_dict": train_state,
+                "resolution": 192,
+                "input": "RGB_plus_frozen_Day62_mask",
+            },
+            final_model_path,
+        )
+    else:
+        train_state = torch.load(
+            final_model_path, map_location="cpu", weights_only=True
+        )["state_dict"]
+    if not reuse_existing_cache or not validation_cache.is_file():
+        _generate_resnet18_oof_cache(
+            validation_samples,
+            cache_path=validation_cache,
+            pretrained_state=None,
+            initial_state=train_state,
+            epochs=8,
+            learning_rate=1e-4,
+            seed=6400,
+            device=device,
+        )
+    return finalize_day63_resnet_oof_from_cache(
+        train_root=train_root,
+        train_manifest=train_manifest,
+        validation_root=validation_root,
+        validation_manifest=validation_manifest,
+        output_dir=output_dir,
+        train_cache=train_cache,
+        validation_cache=validation_cache,
+        comparison_count=comparison_count,
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--train-root", type=Path, required=True)
@@ -1326,9 +2866,34 @@ def main() -> int:
     parser.add_argument("--validation-manifest", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--count", type=int, default=8)
-    parser.add_argument("--study", choices=("v1", "v2"), default="v2")
+    parser.add_argument("--pretrained-weights", type=Path)
+    parser.add_argument("--no-reuse-oof-cache", action="store_true")
+    parser.add_argument(
+        "--study",
+        choices=("v1", "v2", "multirow", "centerline", "resnet_oof"),
+        default="v2",
+    )
     args = parser.parse_args()
-    runner = run_day63_v2_study if args.study == "v2" else run_day63_study
+    if args.study == "resnet_oof":
+        if args.pretrained_weights is None:
+            parser.error("--pretrained-weights is required for --study resnet_oof")
+        run_day63_resnet18_oof_study(
+            train_root=args.train_root,
+            train_manifest=args.train_manifest,
+            validation_root=args.validation_root,
+            validation_manifest=args.validation_manifest,
+            output_dir=args.output_dir,
+            pretrained_weights=args.pretrained_weights,
+            comparison_count=args.count,
+            reuse_existing_cache=not args.no_reuse_oof_cache,
+        )
+        return 0
+    runner = {
+        "v1": run_day63_study,
+        "v2": run_day63_v2_study,
+        "multirow": run_day63_multirow_study,
+        "centerline": run_day63_centerline_study,
+    }[args.study]
     runner(
         train_root=args.train_root,
         train_manifest=args.train_manifest,

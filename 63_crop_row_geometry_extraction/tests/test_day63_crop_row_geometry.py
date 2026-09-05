@@ -34,6 +34,7 @@ from day63_crop_row_geometry import (  # noqa: E402
     select_train_only_candidate,
     v2_acceptance_checks,
 )
+import day63_crop_row_geometry as day63  # noqa: E402
 
 
 def synthetic_row_mask(
@@ -51,6 +52,24 @@ def synthetic_row_mask(
     if add_distractor:
         cv2.line(mask, (20, height - 1), (120, round(0.40 * (height - 1))), 255, 12)
         mask[170:190, 250:290] = 255
+    return mask
+
+
+def synthetic_multirow_mask(*, broken: bool = False) -> np.ndarray:
+    height, width = 240, 320
+    mask = np.zeros((height, width), dtype=np.uint8)
+    vanishing = np.array([0.52, 0.08])
+    anchor_y = 0.40
+    for anchor_x in (0.12, 0.31, 0.50, 0.69, 0.88):
+        for y_norm in np.linspace(0.22, 0.92, 80):
+            if broken and 0.54 < y_norm < 0.62:
+                continue
+            scale = (y_norm - vanishing[1]) / (anchor_y - vanishing[1])
+            x_norm = vanishing[0] + (anchor_x - vanishing[0]) * scale
+            x = round(x_norm * (width - 1))
+            y = round(y_norm * (height - 1))
+            if 0 <= x < width:
+                cv2.circle(mask, (x, y), 4, 255, -1)
     return mask
 
 
@@ -432,3 +451,212 @@ def test_tiny_v2_study_writes_model_and_preserves_frozen_tests(tmp_path: Path) -
     assert (output / "day63_results_v2.json").is_file()
     assert (output / "day63_geometry_v2.joblib").is_file()
     assert (output / "geometry_metrics_v2.csv").is_file()
+
+
+def test_multiline_label_extraction_recovers_all_ordered_rows() -> None:
+    assert hasattr(day63, "extract_multirow_geometry")
+    prediction = day63.extract_multirow_geometry(
+        synthetic_multirow_mask(), label_mode=True
+    )
+
+    assert len(prediction.rows) == 5
+    assert [row.far_x_norm for row in prediction.rows] == sorted(
+        row.far_x_norm for row in prediction.rows
+    )
+
+
+def test_multiline_detector_keeps_broken_rows_as_distinct_hypotheses() -> None:
+    prediction = day63.extract_multirow_geometry(
+        synthetic_multirow_mask(broken=True), label_mode=False
+    )
+
+    assert len(prediction.rows) == 5
+    assert prediction.status in {"valid", "degraded"}
+
+
+def test_multiline_detector_uses_camera_prior_when_lower_mask_edges_bias_vp() -> None:
+    mask = synthetic_multirow_mask(broken=True)
+    cv2.line(mask, (5, 230), (145, 95), 255, 14)
+    cv2.line(mask, (315, 230), (175, 105), 255, 14)
+
+    prediction = day63.extract_multirow_geometry(mask, label_mode=False)
+
+    assert len(prediction.rows) >= 4
+    assert prediction.vanishing_point_norm is not None
+    assert prediction.vanishing_point_norm[1] <= 0.08
+
+
+def test_ordered_matching_penalizes_duplicate_and_missing_rows() -> None:
+    CropRowLine = day63.CropRowLine
+    reference = tuple(
+        CropRowLine(x, x, 1.0, 4) for x in (0.2, 0.4, 0.6, 0.8)
+    )
+    predicted = tuple(
+        CropRowLine(x, x, 0.8, 4) for x in (0.2, 0.21, 0.6)
+    )
+
+    metrics = day63.match_ordered_crop_rows(predicted, reference)
+
+    assert metrics["matched_count"] == 2
+    assert metrics["precision"] == pytest.approx(2 / 3)
+    assert metrics["recall"] == pytest.approx(1 / 2)
+
+
+def test_global_lattice_merges_duplicates_and_completes_supported_gap() -> None:
+    CropRowLine = day63.CropRowLine
+    candidates = tuple(
+        CropRowLine(x, 0.5 + (x - 0.5) * 2.0, confidence, 5)
+        for x, confidence in (
+            (0.10, 0.8),
+            (0.30, 0.9),
+            (0.32, 0.4),
+            (0.50, 0.9),
+            (0.90, 0.8),
+        )
+    )
+
+    assert hasattr(day63, "regularize_crop_row_lattice")
+    rows = day63.regularize_crop_row_lattice(candidates, (0.5, 0.0))
+
+    assert len(rows) == 5
+    assert [row.far_x_norm for row in rows] == pytest.approx(
+        [0.10, 0.30, 0.50, 0.70, 0.90], abs=0.025
+    )
+    observed = min(rows, key=lambda row: abs(row.far_x_norm - 0.30))
+    assert observed.near_x_norm == pytest.approx(0.10, abs=0.04)
+    inferred = min(rows, key=lambda row: abs(row.far_x_norm - 0.70))
+    assert inferred.support_band_count == 0
+
+
+def test_corridor_uses_adjacent_rows_and_rejects_a_central_crop_row() -> None:
+    CropRowLine = day63.CropRowLine
+    clear = tuple(
+        CropRowLine(x, x, 1.0, 4) for x in (0.18, 0.38, 0.64, 0.86)
+    )
+    corridor = day63.derive_image_corridor(clear)
+    assert corridor is not None
+    assert corridor.near_x_norm == pytest.approx(0.51)
+
+    blocked = tuple(
+        CropRowLine(x, x, 1.0, 4) for x in (0.2, 0.5, 0.8)
+    )
+    assert day63.derive_image_corridor(blocked) is None
+
+    unsupported_boundary = tuple(
+        CropRowLine(x, x, 0.8, bands) for x, bands in ((0.38, 0), (0.64, 5))
+    )
+    assert day63.derive_image_corridor(unsupported_boundary) is None
+    assert day63._corridor_indices(unsupported_boundary) is None
+
+
+def test_tiny_multirow_revision_writes_scoped_results(tmp_path: Path) -> None:
+    root = tmp_path / "multirow"
+    (root / "image").mkdir(parents=True)
+    (root / "label").mkdir()
+    records = []
+    for index in range(4):
+        label = synthetic_multirow_mask(broken=index % 2 == 1)
+        image = np.zeros((*label.shape, 3), dtype=np.uint8)
+        image[label > 0] = (0, 180, 0)
+        cv2.imwrite(str(root / "image" / f"{index}.jpg"), image)
+        cv2.imwrite(str(root / "label" / f"{index}.jpg"), label)
+        records.append(str(index))
+    train_manifest = tmp_path / "train_manifest.jsonl"
+    validation_manifest = tmp_path / "validation_manifest.jsonl"
+    train_manifest.write_text(
+        "\n".join(json.dumps({"item_id": stem, "role": "train_development"}) for stem in records),
+        encoding="utf-8",
+    )
+    validation_manifest.write_text(
+        "\n".join(json.dumps({"item_id": stem, "role": "validation_development"}) for stem in records),
+        encoding="utf-8",
+    )
+    output = tmp_path / "output"
+
+    assert hasattr(day63, "run_day63_multirow_study")
+    result = day63.run_day63_multirow_study(
+        train_root=root,
+        train_manifest=train_manifest,
+        validation_root=root,
+        validation_manifest=validation_manifest,
+        output_dir=output,
+        comparison_count=2,
+    )
+
+    assert result["marker"] == "DAY63_MULTIROW_REVISION_COMPLETE"
+    assert result["label_identity_scope"] == "derived_ordered_matching"
+    assert result["frozen_external_accessed"] is False
+    assert (output / "day63_results_multirow.json").is_file()
+    assert (output / "geometry_metrics_multirow.csv").is_file()
+    assert (output / "geometry_comparison_multirow.jpg").is_file()
+
+
+def test_centerline_tensor_keeps_rgb_day62_mask_and_label_shapes() -> None:
+    image = np.zeros((80, 120, 3), dtype=np.uint8)
+    image[:, :, 1] = 180
+    mask = synthetic_multirow_mask()
+    label = mask.copy()
+
+    features, target = day63.prepare_centerline_tensor(
+        image, mask, label, resolution=96
+    )
+
+    assert features.shape == (4, 96, 96)
+    assert target.shape == (1, 96, 96)
+    assert features.dtype == np.uint8
+    assert target.dtype == np.uint8
+    assert set(np.unique(target)).issubset({0, 1})
+    assert features[3].max() == 255
+
+
+def test_centerline_heatmap_decoder_recovers_ordered_rows_and_heading() -> None:
+    mask = synthetic_multirow_mask()
+    probability = cv2.resize(
+        mask.astype(np.float32) / 255.0,
+        (128, 128),
+        interpolation=cv2.INTER_AREA,
+    )
+
+    prediction = day63.decode_centerline_heatmap(
+        probability,
+        peak_height=0.20,
+        peak_prominence=0.05,
+        peak_distance_norm=0.025,
+    )
+
+    assert len(prediction.rows) == 5
+    assert [row.far_x_norm for row in prediction.rows] == sorted(
+        row.far_x_norm for row in prediction.rows
+    )
+    assert max(abs(row.heading_deg) for row in prediction.rows) > 1.0
+
+
+def test_crossfit_folds_are_deterministic_disjoint_and_cover_every_item() -> None:
+    stems = [f"sample-{index}" for index in range(17)]
+
+    first = day63.split_crossfit_folds(stems, fold_count=3)
+    second = day63.split_crossfit_folds(stems, fold_count=3)
+
+    assert first == second
+    assert sorted(stem for fold in first for stem in fold) == sorted(stems)
+    assert not (set(first[0]) & set(first[1]))
+
+
+def test_tiny_row_unet_preserves_spatial_resolution() -> None:
+    torch = pytest.importorskip("torch")
+    model = day63.TinyRowUNet(base_channels=4)
+
+    output = model(torch.zeros((2, 4, 64, 64), dtype=torch.float32))
+
+    assert tuple(output.shape) == (2, 1, 64, 64)
+
+
+def test_resnet18_row_unet_accepts_rgb_plus_day62_mask() -> None:
+    torch = pytest.importorskip("torch")
+    model = day63.ResNet18RowUNet()
+    model.eval()
+
+    with torch.no_grad():
+        output = model(torch.zeros((1, 4, 64, 64), dtype=torch.float32))
+
+    assert tuple(output.shape) == (1, 1, 64, 64)

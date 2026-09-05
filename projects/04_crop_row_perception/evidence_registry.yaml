@@ -5,11 +5,11 @@ updated: 2026-09-05
 entries:
   - id: day59_target_contract_v2
     role: target_contract
-    status: PASS_MULTI_ROW_SCOPE_DATA_REAUDIT_REQUIRED
+    status: PASS_MULTI_ROW_SCOPE_AUDIT_AND_DAY63_RELEARNING_COMPLETE
     evidence: target_contract.yaml; ../../59_crop_row_perception_contract/code/day59_notes.md
     allowed_use: 定义所有可评价可见作物行、相机中心左右边界、图像走廊中心、多线消失点和评价指标
     forbidden_use: 将中央作物行当作行驶中心，或把图像边界称为真实机器人车体/安全边界
-    next_gate: 补充多行标签可分离性、可见性和走廊真值审计后重新学习Day63
+    next_gate: Day65多行视频时序、身份关联和不安全false-valid降低
 
   - id: day60_multirow_label_supplement
     role: scoped_data_audit
@@ -53,15 +53,17 @@ entries:
 
   - id: day63_crop_row_geometry
     role: development_experiment
-    status: V2_TRAIN_FIVE_FOLD_IMPROVEMENT_GATE_PASS
+    status: MULTIROW_GEOMETRY_OOF_PASS_CORRIDOR_REJECTION_BLOCKED
     evidence: ../../63_crop_row_geometry_extraction/code/day63_notes.md
-    local_output: D:/DL_code/data/crop_row_perception/day63_crop_row_geometry/day63_results_v2.json
-    selected_method: extra_depth12_leaf2
-    allowed_use: 为Day64提供中央行近点、远点、方向代理、集成不确定性、支持度和几何状态
-    forbidden_use: 未标定鸟瞰或米制测量、拒识能力、无泄漏内部泛化、外部泛化或真实机器人可靠性声明
-    selection_protocol: 1250张train-development确定性五折选择；第二版必须逐折满足有效率、位置不劣化、方向改善、方向P90和双阈值提升门槛
-    development_note: 248张validation-development已参与Day62和Day63开发，当前不存在未触碰确认集
-    tail_note: 第二版方向P90降至3.994度且双阈值达标率升至82.66%，但最大位置误差0.1384仍暴露少量相邻行误选，留待Day67分类和Day68单原因改进
+    local_output: D:/DL_code/data/crop_row_perception/day63_crop_row_geometry/day63_results_resnet18_oof.json
+    selected_method: partition_matched_three_fold_resnet18_centerline_oof
+    allowed_use: 为Day65提供全部有序作物行、图像左右边界、走廊中心候选、方向和状态
+    forbidden_use: 未标定鸟瞰或米制测量、已验证安全拒识、无泄漏内部泛化、外部泛化或真实机器人可靠性声明
+    selection_protocol: 训练开发和复用验证开发分别三折；每张报告图的标签从其折模型拟合中排除
+    multirow_metrics: train_oof_P_0.9552_R_0.9585_position_0.0101_heading_1.652deg; reused_validation_oof_P_0.9507_R_0.8178_position_0.0120_heading_2.873deg
+    corridor_metrics: overall_boundary_pair_accuracy_0.9160_center_mae_0.0146_supported_valid_recall_0.9248
+    blocking_metric: overall_unsafe_false_valid_0.1314; reused_validation_unsafe_false_valid_0.2807; required_at_most_0.05
+    development_note: 架构和解码器在两套开发数据已被访问后确定；OOF减少训练回看偏差但不是未触碰确认
     same_source_internal_benchmark_accessed: false
     frozen_external_accessed: false
     reject_aware_evaluation_available: false
