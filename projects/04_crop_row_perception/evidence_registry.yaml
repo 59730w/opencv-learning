@@ -48,6 +48,22 @@ entries:
     frozen_external_accessed: false
     reject_aware_evaluation_available: false
 
+  - id: day64_camera_coordinates_measurement
+    role: measurement_definition
+    status: IMAGE_COORDINATE_CONTRACT_PASS_PHYSICAL_MEASUREMENT_BLOCKED
+    evidence: ../../64_crop_row_camera_coordinates_measurement/code/day64_notes.md
+    local_output: D:/DL_code/data/crop_row_perception/day64_camera_measurement/day64_results.json
+    input_method: day63_extra_depth12_leaf2_frozen
+    allowed_use: 为Day65提供图像平面归一化偏移、方向代理、置信度、不确定性和状态
+    forbidden_use: 将单线外推点称为真实消失点，将像素或归一化偏移称为米制误差，或声明真实航向与机器人控制可靠性
+    consistency_result: 248张已复用开发图的Day63方向复算最大绝对差为0度
+    vanishing_point_status: BLOCKED_SINGLE_LINE
+    camera_calibration_available: false
+    metric_measurement_available: false
+    validation_is_untouched: false
+    same_source_internal_benchmark_accessed: false
+    frozen_external_accessed: false
+
   - id: day59_open_source_review
     role: background_reference
     status: AVAILABLE

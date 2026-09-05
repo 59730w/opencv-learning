@@ -70,3 +70,13 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - 248张validation-development已经参与Day63开发；第二版指标0.9476、0.0239、1.809°、方向P90 3.994°和双阈值82.66%只能作为同源开发证据，不能称为未触碰确认；
 - 本地结果：`D:/DL_code/data/crop_row_perception/day63_crop_row_geometry/`，因CRDLD许可未明确而不纳入Git；
 - CRDLD同源内部基准、RowDetr冻结外部集和目标域拒识负样本均未访问或不可用。
+
+## Day64 产物
+
+- `../../64_crop_row_camera_coordinates_measurement/code/day64_camera_measurement.py`：归一化/像素坐标、图像偏移、方向代理、多线消失点、相机射线、地面变换和明确阻塞状态；
+- `../../64_crop_row_camera_coordinates_measurement/tests/test_day64_camera_measurement.py`：15项坐标符号、分辨率、状态传播、消失点、合成标定与端到端测试；
+- `../../64_crop_row_camera_coordinates_measurement/code/day64_notes.md`：完整中文公式、测试过程、真实结果、可视化与物理测量边界；
+- 冻结Day63 `extra_depth12_leaf2` 后在248张已复用开发图上复算，valid fraction为0.9476，方向定义与Day63最大差异为0°；
+- 一条中央行不能提供真实消失点；没有相机内参和地面变换，真实相机射线与米制测量保持 `BLOCKED`；
+- 本地结果：`D:/DL_code/data/crop_row_perception/day64_camera_measurement/`，数据图片和运行结果不纳入Git；
+- Day65只对图像偏移、方向代理、置信度、不确定性和状态做视频时序稳定。
