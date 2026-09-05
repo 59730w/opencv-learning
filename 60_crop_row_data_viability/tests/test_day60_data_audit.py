@@ -4,12 +4,16 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import pytest
 
 
 CODE_DIR = Path(__file__).resolve().parents[1] / "code"
 sys.path.insert(0, str(CODE_DIR))
 
-from day60_data_audit import audit_image_mask_pairs, evaluate_data_gate
+import day60_data_audit
+
+audit_image_mask_pairs = day60_data_audit.audit_image_mask_pairs
+evaluate_data_gate = day60_data_audit.evaluate_data_gate
 
 
 def _write_pair(root: Path, stem: str, value: int, mask_value: int) -> None:
@@ -134,3 +138,25 @@ def test_registry_example_is_valid_json(tmp_path: Path) -> None:
     path = tmp_path / "registry.json"
     path.write_text(json.dumps({"sources": []}), encoding="utf-8")
     assert json.loads(path.read_text(encoding="utf-8")) == {"sources": []}
+
+
+def test_multirow_label_audit_counts_separated_rows_at_fixed_bands(tmp_path: Path) -> None:
+    label_dir = tmp_path / "label"
+    label_dir.mkdir()
+    label = np.zeros((100, 120), dtype=np.uint8)
+    for bottom_x in (15, 45, 75, 105):
+        cv2.line(label, (60, 5), (bottom_x, 99), 255, 2)
+    assert cv2.imwrite(str(label_dir / "four.jpg"), label)
+
+    assert hasattr(day60_data_audit, "audit_multirow_label_masks")
+    report = day60_data_audit.audit_multirow_label_masks(label_dir)
+
+    assert report["label_count"] == 1
+    assert report["instance_ids_available"] is False
+    assert report["max_rows_at_any_audit_band"] >= 4
+    assert report["multirow_signal_present_fraction"] == 1.0
+
+
+def test_multirow_label_audit_rejects_missing_directory(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="label directory"):
+        day60_data_audit.audit_multirow_label_masks(tmp_path / "missing")

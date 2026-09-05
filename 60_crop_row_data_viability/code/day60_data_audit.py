@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import cv2
+import numpy as np
 
 
 REQUIRED_FIELDS = (
@@ -70,6 +71,60 @@ def audit_image_mask_pairs(root: Path) -> dict[str, Any]:
         "mask_value_counts": dict(sorted(mask_value_counts.items())),
         "duplicate_image_groups": _duplicate_groups(images),
         "duplicate_mask_groups": _duplicate_groups(masks),
+    }
+
+
+def _count_horizontal_runs(mask: np.ndarray, y_norm: float) -> int:
+    height = mask.shape[0]
+    y = round(y_norm * (height - 1))
+    half_height = max(1, round(0.006 * height))
+    band = mask[max(0, y - half_height) : min(height, y + half_height + 1)]
+    active = np.any(band >= 128, axis=0)
+    changes = np.diff(np.r_[False, active, False].astype(np.int8))
+    return int(np.count_nonzero(changes == 1))
+
+
+def audit_multirow_label_masks(label_dir: Path) -> dict[str, Any]:
+    """Audit whether merged centerline masks contain separable multi-row signal.
+
+    The result deliberately does not claim instance identities: CRDLD stores all
+    row centerlines in one binary JPEG mask.  Counts at fixed horizontal bands
+    establish only that multiple row crossings are present and derivable.
+    """
+    if not label_dir.is_dir():
+        raise ValueError("label directory does not exist")
+    paths = sorted(label_dir.glob("*.jpg"))
+    audit_bands = (0.25, 0.40, 0.60, 0.80)
+    decode_failures: list[str] = []
+    per_image_max: list[int] = []
+    band_counts: dict[str, Counter[int]] = {
+        f"{band:.2f}": Counter() for band in audit_bands
+    }
+    for path in paths:
+        label = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+        if label is None:
+            decode_failures.append(path.stem)
+            continue
+        counts = [_count_horizontal_runs(label, band) for band in audit_bands]
+        per_image_max.append(max(counts))
+        for band, count in zip(audit_bands, counts):
+            band_counts[f"{band:.2f}"][count] += 1
+
+    decoded = len(per_image_max)
+    multirow = sum(count >= 2 for count in per_image_max)
+    return {
+        "label_count": len(paths),
+        "decoded_count": decoded,
+        "decode_failures": decode_failures,
+        "audit_y_norms": list(audit_bands),
+        "instance_ids_available": False,
+        "label_representation": "merged_binary_centerline_mask",
+        "max_rows_at_any_audit_band": max(per_image_max, default=0),
+        "multirow_signal_present_fraction": multirow / decoded if decoded else 0.0,
+        "row_count_distributions_by_band": {
+            band: dict(sorted(counts.items())) for band, counts in band_counts.items()
+        },
+        "formal_instance_metrics_require_derived_ordered_matching": True,
     }
 
 

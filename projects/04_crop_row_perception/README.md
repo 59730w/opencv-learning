@@ -48,6 +48,9 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - `data/sample_remote_zip_camera.py`：无需下载完整大包的远程 ZIP 相机抽样工具；
 - `../../60_crop_row_data_viability/code/day60_data_audit.py`：可重跑的数据审查器；
 - `../../60_crop_row_data_viability/code/day60_notes.md`：完整中文学习笔记。
+- 2026-09-05补充多行标签审计：CRDLD全部1,930张标签可解码且均含多行信号，但所有中心线
+  合并在二值JPEG掩膜中，没有实例ID；允许固定水平带交点与顺序匹配学习，正式实例身份、
+  漏行农业语义及完整数据门禁仍未通过。
 
 ## Day61 产物
 

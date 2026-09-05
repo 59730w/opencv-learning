@@ -11,6 +11,14 @@ entries:
     forbidden_use: 将中央作物行当作行驶中心，或把图像边界称为真实机器人车体/安全边界
     next_gate: 补充多行标签可分离性、可见性和走廊真值审计后重新学习Day63
 
+  - id: day60_multirow_label_supplement
+    role: scoped_data_audit
+    status: MULTIROW_SIGNAL_PASS_INSTANCE_IDENTITIES_DERIVED_ONLY
+    evidence: ../../60_crop_row_data_viability/code/day60_notes.md; data_viability_report.md
+    coverage: CRDLD train 1250、validation 250、test 430张标签全部解码；多行信号比例均为100%
+    allowed_use: 固定水平带交点、从左到右顺序匹配和至少两带可追踪行的方向学习
+    forbidden_use: 把连通域当作行实例、未经派生匹配宣称正式实例检测、证明真实漏行语义
+
   - id: day61_scoped_data_gate
     role: active_learning_scope
     status: PASS
