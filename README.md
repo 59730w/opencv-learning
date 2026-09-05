@@ -100,7 +100,7 @@ CNN → 图像分类 → 目标检测（YOLOv8）→ 图像分割（U-Net）
 | CMake | 必须掌握，所有嵌入式项目的标配 | CMake 官方教程 |
 | 编译流程 | `gcc`/`g++`、交叉编译概念 | 搜索“交叉编译入门” |
 
-**当前进度（2026-09-04）：**
+**当前进度（2026-09-05）：**
 
 - Day44：完成 MSYS2 UCRT64、CMake/Ninja、OpenCV 5 工具链和首个 C++ OpenCV 程序。
 - Day45：完成真实图片 I/O、HighGUI、`cv::Mat` 浅/深拷贝、`const cv::Mat&` 和退出码验收。
