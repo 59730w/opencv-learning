@@ -74,14 +74,21 @@ def audit_image_mask_pairs(root: Path) -> dict[str, Any]:
     }
 
 
-def _count_horizontal_runs(mask: np.ndarray, y_norm: float) -> int:
+def _horizontal_run_centers(mask: np.ndarray, y_norm: float) -> list[float]:
     height = mask.shape[0]
     y = round(y_norm * (height - 1))
     half_height = max(1, round(0.006 * height))
     band = mask[max(0, y - half_height) : min(height, y + half_height + 1)]
     active = np.any(band >= 128, axis=0)
     changes = np.diff(np.r_[False, active, False].astype(np.int8))
-    return int(np.count_nonzero(changes == 1))
+    starts = np.flatnonzero(changes == 1)
+    ends = np.flatnonzero(changes == -1)
+    denominator = max(1, mask.shape[1] - 1)
+    return [float((start + end - 1) / 2.0 / denominator) for start, end in zip(starts, ends)]
+
+
+def _count_horizontal_runs(mask: np.ndarray, y_norm: float) -> int:
+    return len(_horizontal_run_centers(mask, y_norm))
 
 
 def audit_multirow_label_masks(label_dir: Path) -> dict[str, Any]:
@@ -97,6 +104,9 @@ def audit_multirow_label_masks(label_dir: Path) -> dict[str, Any]:
     audit_bands = (0.25, 0.40, 0.60, 0.80)
     decode_failures: list[str] = []
     per_image_max: list[int] = []
+    centered_crop_row_count = 0
+    both_sides_count = 0
+    corridor_proxy_clear_count = 0
     band_counts: dict[str, Counter[int]] = {
         f"{band:.2f}": Counter() for band in audit_bands
     }
@@ -106,6 +116,14 @@ def audit_multirow_label_masks(label_dir: Path) -> dict[str, Any]:
             decode_failures.append(path.stem)
             continue
         counts = [_count_horizontal_runs(label, band) for band in audit_bands]
+        corridor_centers = _horizontal_run_centers(label, 0.80)
+        centered = any(abs(value - 0.5) <= 0.04 for value in corridor_centers)
+        both_sides = any(value < 0.46 for value in corridor_centers) and any(
+            value > 0.54 for value in corridor_centers
+        )
+        centered_crop_row_count += int(centered)
+        both_sides_count += int(both_sides)
+        corridor_proxy_clear_count += int(both_sides and not centered)
         per_image_max.append(max(counts))
         for band, count in zip(audit_bands, counts):
             band_counts[f"{band:.2f}"][count] += 1
@@ -121,6 +139,11 @@ def audit_multirow_label_masks(label_dir: Path) -> dict[str, Any]:
         "label_representation": "merged_binary_centerline_mask",
         "max_rows_at_any_audit_band": max(per_image_max, default=0),
         "multirow_signal_present_fraction": multirow / decoded if decoded else 0.0,
+        "corridor_audit_y_norm": 0.80,
+        "camera_center_exclusion_norm": 0.04,
+        "centered_crop_row_at_corridor_band_fraction": centered_crop_row_count / decoded if decoded else 0.0,
+        "both_sides_at_corridor_band_fraction": both_sides_count / decoded if decoded else 0.0,
+        "corridor_proxy_clear_fraction": corridor_proxy_clear_count / decoded if decoded else 0.0,
         "row_count_distributions_by_band": {
             band: dict(sorted(counts.items())) for band, counts in band_counts.items()
         },

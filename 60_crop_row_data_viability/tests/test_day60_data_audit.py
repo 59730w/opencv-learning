@@ -155,6 +155,9 @@ def test_multirow_label_audit_counts_separated_rows_at_fixed_bands(tmp_path: Pat
     assert report["instance_ids_available"] is False
     assert report["max_rows_at_any_audit_band"] >= 4
     assert report["multirow_signal_present_fraction"] == 1.0
+    assert report["both_sides_at_corridor_band_fraction"] == 1.0
+    assert report["centered_crop_row_at_corridor_band_fraction"] == 0.0
+    assert report["corridor_proxy_clear_fraction"] == 1.0
 
 
 def test_multirow_label_audit_rejects_missing_directory(tmp_path: Path) -> None:
