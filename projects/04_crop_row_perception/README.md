@@ -83,13 +83,14 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 
 ## Day64 产物
 
-- `../../64_crop_row_camera_coordinates_measurement/code/day64_camera_measurement.py`：归一化/像素坐标、图像偏移、方向代理、多线消失点、相机射线、地面变换和明确阻塞状态；
-- `../../64_crop_row_camera_coordinates_measurement/tests/test_day64_camera_measurement.py`：15项坐标符号、分辨率、状态传播、消失点、合成标定与端到端测试；
-- `../../64_crop_row_camera_coordinates_measurement/code/day64_notes.md`：完整中文公式、测试过程、真实结果、可视化与物理测量边界；
-- 冻结Day63 `extra_depth12_leaf2` 后在248张已复用开发图上复算，valid fraction为0.9476，方向定义与Day63最大差异为0°；
-- 一条中央行不能提供真实消失点；没有相机内参和地面变换，真实相机射线与米制测量保持 `BLOCKED`；
+- `../../64_crop_row_camera_coordinates_measurement/code/day64_camera_measurement.py`：保留单行历史基线，当前入口把Day63多行OOF输出转换为左右边界、图像走廊中心、偏移、航向、行间距和多线IRLS消失点；
+- `../../64_crop_row_camera_coordinates_measurement/tests/test_day64_camera_measurement.py`：20项坐标、状态传播、中央作物行防误导、缺边界、多线消失点、合成标定与端到端测试；
+- `../../64_crop_row_camera_coordinates_measurement/code/day64_notes.md`：已原位改为多行重学最终版，记录公式、RED/GREEN过程、真实结果、失败优化与物理边界；
+- 1,498帧Day63标签排除OOF审计得到左右边界成对正确率0.9185、走廊中心MAE 0.0146、走廊航向MAE 1.186°，多线消失点可用率0.9987、中位误差0.0195，Day64测量门全部通过；
+- 中央作物行位于相机中心时不生成行驶中心；两侧相邻边界中线才是图像走廊。安全false-valid仍为0.1314，未达到0.05，留给Day65时序与拒识；
+- 没有相机内参和地面变换，真实相机射线、米制行距和米制偏移保持 `BLOCKED`；
 - 本地结果：`D:/DL_code/data/crop_row_perception/day64_camera_measurement/`，数据图片和运行结果不纳入Git；
-- Day65只对图像偏移、方向代理、置信度、不确定性和状态做视频时序稳定。
+- Day65将跟踪多行身份，并对走廊中心、消失点、偏移、方向、置信度和状态做视频时序稳定与失效判断。
 
 ## 修订后的 Day59～Day70 路线
 
@@ -100,7 +101,7 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 | 61 | 颜色与光照 | 冻结对整幅植被有效的Gray-World+HSV输入，不绑定单中央行 |
 | 62 | 形态学与区域 | 冻结保留远近多行结构的透视感知掩码，不按中央目标裁剪 |
 | 63 | 多作物行几何重学 | OOF检测全部可评价行，输出有序行、左右边界和图像走廊候选；核心几何门通过 |
-| 64 | 坐标与测量边界 | 保留既有坐标公式；Day65接入多行走廊中心和多线消失点，不伪造米制测量 |
+| 64 | 多行坐标与测量边界 | 用左右相邻行得到走廊中心、偏移、方向、行距和多线消失点，不伪造米制测量 |
 | 65 | 多行视频时序与安全状态 | 跟踪行身份、平滑走廊/消失点、处理漏检，并重点降低false-valid |
 | 66 | 完整离线Pilot | RGB视频端到端输出多行、边界、走廊中心、方向、置信度和valid/degraded/reject |
 | 67 | 失败案例分组 | 定量分类杂草、遮挡、缺行、中央作物行、地头、转弯、光照和时序切换失败 |

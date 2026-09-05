@@ -17,15 +17,18 @@ for dependency in (DAY63_CODE, DAY64_CODE):
         sys.path.insert(0, str(dependency))
 
 from day63_crop_row_geometry import (  # noqa: E402
+    CropRowLine,
     extract_multiscale_geometry_features,
     fit_extra_trees_geometry,
 )
+import day64_camera_measurement as day64  # noqa: E402
 from day64_camera_measurement import (  # noqa: E402
     estimate_vanishing_point,
     ground_plane_measurement,
     image_coordinate_measurement,
     normalized_to_pixel,
     project_pixel_to_camera_ray,
+    run_day64_multirow_study,
     run_day64_study,
 )
 
@@ -199,3 +202,128 @@ def test_tiny_day64_study_writes_results_without_physical_claims(tmp_path: Path)
     assert (output / "day64_results.json").is_file()
     assert (output / "coordinate_metrics.csv").is_file()
     assert (output / "coordinate_contact_sheet.jpg").is_file()
+
+
+def _row_through_vanishing_point(
+    near_x: float, *, vp: tuple[float, float] = (0.5, 0.1)
+) -> CropRowLine:
+    near_y, far_y = 0.90, 0.40
+    scale = (far_y - vp[1]) / (near_y - vp[1])
+    far_x = vp[0] + (near_x - vp[0]) * scale
+    return CropRowLine(far_x, near_x, 0.9, 8)
+
+
+def test_multirow_measurement_uses_adjacent_boundaries_not_a_crop_row() -> None:
+    rows = tuple(_row_through_vanishing_point(x) for x in (0.12, 0.34, 0.66, 0.88))
+
+    measurement = day64.multirow_coordinate_measurement(
+        rows=rows, width=640, height=360
+    )
+
+    assert measurement.status == "valid"
+    assert measurement.corridor_left_index == 1
+    assert measurement.corridor_right_index == 2
+    assert measurement.corridor_center_near_x_norm == pytest.approx(0.5)
+    assert measurement.lateral_offset_norm == pytest.approx(0.0)
+    assert measurement.vanishing_point_status == "available"
+    assert measurement.vanishing_point_norm == pytest.approx((0.5, 0.1), abs=1e-6)
+
+
+def test_multirow_measurement_degrades_when_crop_row_occupies_camera_center() -> None:
+    rows = tuple(_row_through_vanishing_point(x) for x in (0.2, 0.5, 0.8))
+
+    measurement = day64.multirow_coordinate_measurement(
+        rows=rows, width=640, height=360
+    )
+
+    assert measurement.status == "degraded"
+    assert measurement.corridor_center_near_x_norm is None
+    assert measurement.lateral_offset_norm is None
+    assert "central crop row" in measurement.reason
+
+
+def test_multirow_measurement_degrades_when_one_boundary_side_is_missing() -> None:
+    rows = tuple(_row_through_vanishing_point(x) for x in (0.58, 0.76, 0.92))
+
+    measurement = day64.multirow_coordinate_measurement(
+        rows=rows, width=640, height=360
+    )
+
+    assert measurement.status == "degraded"
+    assert measurement.corridor_left_index is None
+    assert measurement.corridor_right_index is None
+
+
+def test_multirow_measurement_reports_image_spacing_without_metric_claim() -> None:
+    rows = tuple(_row_through_vanishing_point(x) for x in (0.14, 0.38, 0.64, 0.90))
+
+    measurement = day64.multirow_coordinate_measurement(
+        rows=rows, width=640, height=360
+    )
+
+    assert len(measurement.row_spacing_norm) == 3
+    assert all(value > 0 for value in measurement.row_spacing_norm)
+    assert measurement.metric_measurement_status == "blocked_no_ground_transform"
+
+
+def test_tiny_multirow_day64_study_audits_corridor_and_vanishing_point(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "development"
+    (root / "image").mkdir(parents=True)
+    (root / "label").mkdir()
+    stems: list[str] = []
+    probabilities: list[np.ndarray] = []
+    for index, shift in enumerate((-0.02, 0.0, 0.02)):
+        label = np.zeros((160, 200), dtype=np.uint8)
+        for near_x in (0.12 + shift, 0.36 + shift, 0.64 + shift, 0.88 + shift):
+            far_x = 0.5 + (near_x - 0.5) * 0.375
+            cv2.line(
+                label,
+                (round(near_x * 199), round(0.90 * 159)),
+                (round(far_x * 199), round(0.40 * 159)),
+                255,
+                5,
+            )
+        image = np.zeros((160, 200, 3), dtype=np.uint8)
+        image[label > 0] = (0, 180, 0)
+        stem = str(index)
+        stems.append(stem)
+        cv2.imwrite(str(root / "image" / f"{stem}.jpg"), image)
+        cv2.imwrite(str(root / "label" / f"{stem}.jpg"), label)
+        probability = cv2.resize(label, (192, 192), interpolation=cv2.INTER_LINEAR)
+        probabilities.append(probability.astype(np.float32) / 255.0)
+    manifest = tmp_path / "manifest.jsonl"
+    manifest.write_text(
+        "\n".join(
+            json.dumps({"item_id": stem, "role": "train_development"})
+            for stem in stems
+        ),
+        encoding="utf-8",
+    )
+    cache = tmp_path / "oof.npz"
+    np.savez_compressed(cache, probabilities=np.asarray(probabilities), stems=stems)
+    output = tmp_path / "output"
+
+    result = run_day64_multirow_study(
+        partitions=[
+            {
+                "name": "train_development_oof",
+                "root": root,
+                "manifest": manifest,
+                "role": "train_development",
+                "probability_cache": cache,
+            }
+        ],
+        output_dir=output,
+        comparison_count=3,
+    )
+
+    assert result["marker"] == "DAY64_MULTIROW_RELEARNING_COMPLETE"
+    assert result["summary"]["vanishing_point_available_fraction"] == 1.0
+    assert result["summary"]["corridor_center_mae_norm"] < 0.03
+    assert result["camera_calibration_available"] is False
+    assert result["metric_measurement_available"] is False
+    assert (output / "day64_results_multirow.json").is_file()
+    assert (output / "coordinate_metrics_multirow.csv").is_file()
+    assert (output / "coordinate_contact_sheet_multirow.jpg").is_file()

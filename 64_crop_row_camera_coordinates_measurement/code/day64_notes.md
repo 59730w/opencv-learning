@@ -1,277 +1,207 @@
-# Day64：相机坐标与测量——图像偏移、方向、消失点与标定边界
+# Day64：多作物行相机坐标与走廊测量（重学最终版）
 
-## 1. 今日目标
+> 当前结论：早晨的单中央作物行版本只保留为历史基线，不再作为项目四的当前输出。
+> 本版直接接入Day63重学后的多行OOF结果，用相邻两条作物行确定机器人行间走廊；没有
+> 相机标定时，所有量仍严格停留在图像坐标系。
 
-Day64不再优化Day63的作物行检测，而是回答一个更基础的问题：Day63输出的两个归一化
-端点究竟能测量什么，哪些量在缺少相机标定时不能声称已经得到。
+## 1. 为什么Day64必须重学
 
-完整链路为：
+原版把“最接近图像中央的一条作物行”当作参考，因此只能计算作物行相对图像中心的偏移，
+不能回答机器人究竟应该走在哪两条作物行之间。Day63已经重学为多行检测，Day64若仍使用
+单行，接口就会断裂，并可能把中央作物行本身误当成行驶位置。
 
-```text
-Day63冻结近点/远点
-        ↓
-图像平面归一化偏移和方向代理
-        ↓
-单线外推点与真实消失点条件分离
-        ↓
-相机内参存在时才能得到相机射线
-        ↓
-地面变换存在时才能讨论米制偏移和地面方向
-```
-
-## 2. 冻结输入
-
-今天直接加载Day63保存的 `day63_geometry_v2.joblib`：
+本版链路改为：
 
 ```text
-selected model: extra_depth12_leaf2
-feature length: 320
-near evaluation y: 0.90
-far evaluation y: 0.40
+Day63逐帧OOF多行概率图
+        ↓
+有序作物行 + 多线稳健消失点
+        ↓
+图像中心左右最近的两条受支持作物行
+        ↓
+两条边界的中线 = 图像行间走廊中心
+        ↓
+归一化偏移、像素偏移、图像航向、图像行间距
+        ↓
+无标定时阻塞相机射线和米制测量
 ```
 
-Day61颜色、Day62形态学和Day63 Extra Trees均未重新训练或调参。Day63的
-`valid/degraded/reject`、置信度和不确定性原样向下游传播；Day64不能把降级或拒绝结果
-提升为有效测量。
+## 2. 输入和证据边界
 
-## 3. 三种不能混淆的坐标
+- 输入：Day63最终ResNet18中心线模型产生的三折标签排除OOF概率图；
+- 训练开发：1,250帧；复用验证开发：248帧；合计1,498帧；
+- 解码参数沿用Day63冻结值：`peak_height=0.20`、`peak_prominence=0.03`、
+  `peak_distance_norm=0.06`；
+- Day61颜色、Day62形态学、Day63概率图均未在Day64重调；
+- CRDLD `test_data`、RowDetr冻结外部集和目标域负样本均未访问。
 
-### 3.1 图像归一化坐标
+所以结果是“同源、已参与方法选择的开发证据”，不是未触碰验证、外部泛化或实车安全证据。
 
-图像左上角为 `(0, 0)`，右下角为 `(1, 1)`。它与图像分辨率无关，适合比较不同尺寸
-图像，但不是物理坐标。
+## 3. 坐标合同
 
-### 3.2 像素坐标
-
-对宽 `W`、高 `H` 的图像：
+图像左上角为`(0,0)`，右下角为`(1,1)`。图像中心是`x=0.5`。归一化坐标转像素：
 
 ```text
 u = x_norm × (W - 1)
 v = y_norm × (H - 1)
 ```
 
-使用 `W-1` 和 `H-1` 可以让归一化坐标1准确落在最后一个像素。
-
-### 3.3 相机与地面坐标
-
-相机射线需要真实内参矩阵 `K`；地面米制坐标还需要畸变、相机安装姿态和有效地面
-变换。当前数据没有这些标定证据，所以正式结果必须阻塞这两层输出。
-
-## 4. 图像中心偏移
-
-Day64继续使用Day59预先确定的符号：
+所有行在`y=0.80`处排序。图像中心左侧最近的受支持行是左边界，右侧最近的受支持行是
+右边界。两条边界的近点和远点分别取平均，构成走廊中心线。
 
 ```text
-lateral_offset_norm = near_x_norm - 0.5
+corridor_near_x = (left_near_x + right_near_x) / 2
+corridor_far_x  = (left_far_x  + right_far_x)  / 2
+lateral_offset_norm = corridor_near_x - 0.5
+lateral_offset_px   = lateral_offset_norm × (W - 1)
+heading_proxy_deg   = atan2(corridor_far_x - corridor_near_x, 0.90 - 0.40)
 ```
 
-- 等于0：近端作物行位于图像中心；
-- 大于0：作物行位于图像右侧；
-- 小于0：作物行位于图像左侧。
+- 偏移为正：目标走廊中心在图像中心右侧；
+- 偏移为负：目标走廊中心在图像中心左侧；
+- 航向仍是图像空间代理角，不是标定后的车体航向角。
 
-像素偏移为：
+## 4. 防止把作物行当成道路
 
-```text
-lateral_offset_px = lateral_offset_norm × (W - 1)
-```
+若`y=0.80`处存在满足`|row_x - 0.5| <= 0.04`的中央作物行，系统输出`degraded`，
+不生成走廊中心。若只检测到图像中心一侧的作物行、边界支持不足、上游拒绝，或无法形成
+稳定多线交点，也不把结果提升成`valid`。
 
-它们都只是图像平面量，不能解释成“机器人偏了多少米”。
+这条规则解决的是语义方向错误：黄色/紫色作物行是边界证据，真正应走的位置是两条边界
+中间的白色走廊中心线。
 
-## 5. 方向角定义
+## 5. 多线真实消失点（图像空间）
 
-归一化方向代理与Day63完全一致：
-
-```text
-heading_proxy_deg = degrees(
-    atan2(far_x_norm - near_x_norm, near_y_norm - far_y_norm)
-)
-```
-
-从近点指向远点，图像上方视为前进方向。远点在近点右侧时为正，左侧时为负。
-
-另外计算 `pixel_slope_deg` 只用于可视化。它使用像素横纵距离，因此会受宽高比影响；
-`heading_proxy_deg` 虽然分辨率无关，仍然不是相机标定后的真实航向角。
-
-## 6. 单线外推点不等于消失点
-
-一条中央线只能定义直线。将它外推到 `y=0.25` 得到的是
-`horizon_intercept_norm`，只是单线外推代理。
-
-真实消失点至少需要两条非平行图像线。Day64实现齐次直线表示，并用迭代重加权最小
-二乘估计共同交点：
+每条作物行由`y=0.90`和`y=0.40`的两个端点定义。两条以上非平行行使用齐次直线方程，
+并以迭代重加权最小二乘（IRLS）估计共同交点：
 
 ```text
 l_i = p_i1 × p_i2
-A [x, y]^T = -c
+A [x_vp, y_vp]^T = -c
 ```
 
-少于两条线、平行线或病态线组会返回不可用。当前Day63只输出一条中央行，因此真实数据
-必须记录：
+本版的消失点确实由多条检测行共同求得，不再是单线外推点。它仍然只是归一化图像坐标；
+没有镜头畸变和相机内外参时，不能把它直接解释成地面上的真实方向或距离。
+
+## 6. 行间距
+
+将相邻有序行在`y=0.80`处的横向间隔记录为`row_spacing_norm`。本版报告预测与标签的
+中位行间距差，但不输出米。真实米制行距需要相机标定、地面单应或深度信息。
+
+## 7. 测试驱动过程
+
+重学前先增加四项合同测试：
+
+1. 四条作物行能选择中央相邻边界并产生走廊；
+2. 中央作物行存在时必须降级，不能当成可行驶中心；
+3. 缺少一侧边界时必须降级；
+4. 能输出图像行间距，但米制测量必须阻塞。
+
+首次运行得到4项失败、15项旧测试通过，失败原因是多行测量入口尚不存在。实现后再增加
+小型多行端到端测试，最终结果：
 
 ```text
-BLOCKED_SINGLE_LINE
+20 passed
 ```
 
-合成多线测试只能验证数学实现，不能把当前真实输出变成消失点证据。
+## 8. 真实开发数据结果
 
-## 7. 相机射线
+| 指标 | 训练开发OOF | 复用验证开发OOF | 合计 |
+|---|---:|---:|---:|
+| 帧数 | 1,250 | 248 | 1,498 |
+| 标签支持走廊帧数 | 607 | 191 | 798 |
+| 支持走廊有效召回 | 90.94% | 97.38% | 92.48% |
+| 不安全false-valid率 | 11.82% | 28.07% | 13.14% |
+| 左右边界成对正确率 | 90.44% | 96.34% | 91.85% |
+| 走廊中心MAE | 0.0144 | 0.0153 | 0.0146 |
+| 走廊航向MAE | 1.203° | 1.138° | 1.186° |
+| 消失点可用率 | 99.84% | 100.00% | 99.87% |
+| 消失点中位误差 | 0.0186 | 0.0263 | 0.0195 |
+| 中位行间距MAE | 0.0215 | 0.0630 | 0.0283 |
 
-如果存在经过验证的内参矩阵：
+Day64测量门：
+
+- 边界成对正确率不少于0.80：通过；
+- 走廊中心MAE不大于0.05：通过；
+- 走廊航向MAE不大于5°：通过；
+- 消失点可用率不少于0.90：通过；
+- 无标定时相机射线和米制测量全部阻塞：通过。
+
+因此`day64_measurement_gate_passed = true`，本版作为Day64学习成果可以让人满意。
+
+## 9. 没有通过的安全门
+
+Day65交接门要求：支持走廊召回不少于0.80，且不安全false-valid率不大于0.05。前者通过，
+后者13.14%未通过，因此`day65_safety_handoff_gate_passed = false`。
+
+重学过程中实测并否决两种简单优化：
+
+- 走廊宽度/典型行距比阈值：不能在保留足够真走廊的同时把false-valid降至5%；
+- 更低热图阈值的一致性检查：对复用验证开发的false-valid几乎没有实质改善。
+
+这里不继续反复调Day64坐标公式。该失败要求Day65利用视频时序、行身份连续性、置信度和
+失效状态解决；目标域负样本仍是最终安全拒识的必要缺口。
+
+## 10. 物理测量边界
+
+当前缺少：
+
+- 相机内参和镜头畸变系数；
+- 相机相对车体/地面的外参或标定单应；
+- 机器人真实宽度、轮迹和可通行性标签。
+
+所以正式结果保持：
 
 ```text
-ray = normalize(K^-1 [u, v, 1]^T)
+camera ray: BLOCKED_NO_CALIBRATION
+metric measurement: BLOCKED_NO_GROUND_TRANSFORM
+real robot control: NOT ESTABLISHED
 ```
 
-它得到的是相机坐标系中的单位射线，而不是地面点。代码对合成内参完成了中心射线和
-右侧射线测试；真实数据没有内参，输出为：
+## 11. 代码与产物
+
+主代码：`64_crop_row_camera_coordinates_measurement/code/day64_camera_measurement.py`
+
+关键接口：
+
+- `multirow_coordinate_measurement`：多行排序、左右边界、走廊中心、偏移和行间距；
+- `estimate_vanishing_point`：多线IRLS消失点；
+- `run_day64_multirow_study`：读取Day63 OOF缓存，生成逐帧CSV、汇总JSON和可视化；
+- `image_coordinate_measurement`、`run_day64_study`：保留的单行历史基线。
+
+本地产物：
 
 ```text
-BLOCKED_NO_CALIBRATION
+D:/DL_code/data/crop_row_perception/day64_camera_measurement/day64_results_multirow.json
+D:/DL_code/data/crop_row_perception/day64_camera_measurement/coordinate_metrics_multirow.csv
+D:/DL_code/data/crop_row_perception/day64_camera_measurement/coordinate_contact_sheet_multirow.jpg
 ```
 
-## 8. 地面米制测量
+旧的`day64_results.json`、`coordinate_metrics.csv`和`coordinate_contact_sheet.jpg`只作为
+早晨单行版本历史留存，不代表当前结论。
 
-只有图像到地面的有效单应变换，并且其输出坐标明确为 `X向右、Z向前、单位为米`，才可
-计算：
-
-```text
-lateral_offset_m = X_near - X_robot_center
-heading_deg = degrees(atan2(X_far - X_near, Z_far - Z_near))
-```
-
-代码使用单位矩阵合成夹具验证公式，但真实CRDLD没有相机安装高度、内外参或地面变换，
-因此正式输出为：
-
-```text
-BLOCKED_NO_GROUND_TRANSFORM
-```
-
-## 9. 测试驱动过程
-
-先创建15项测试并运行，得到预期RED：
-
-```text
-ModuleNotFoundError: No module named 'day64_camera_measurement'
-```
-
-实现后覆盖：
-
-- 归一化角点到像素的映射与非法输入；
-- 中心、左右偏移和垂直方向；
-- 左右方向角符号；
-- 不同分辨率下归一化测量一致；
-- Day63降级和拒绝状态不被提升；
-- 单线只输出外推代理；
-- 少于两线和平行线拒绝；
-- 合成多线恢复已知消失点；
-- 缺少内参时阻塞相机射线；
-- 合成内参反投影单位射线；
-- 缺少地面变换时阻塞米制测量；
-- 合成地面变换验证偏移和方向；
-- 小型端到端研究写出JSON、CSV和对比图。
-
-实现后的Day64测试：
-
-```text
-15 passed
-```
-
-## 10. 真实开发数据运行
-
-使用248张已经参与Day62/63开发的 `validation-development` 图片。它们不是未触碰验证集，
-今天不再选参，只检查冻结模型和坐标定义的一致性。
-
-| 项目 | 结果 |
-| --- | ---: |
-| 图片数 | 248 |
-| valid fraction | 0.9476 |
-| degraded fraction | 0.0524 |
-| reject fraction | 0.0000 |
-| 有效帧平均绝对图像偏移 | 0.0629 |
-| 有效帧平均绝对方向代理 | 2.826° |
-| Day63方向复算最大差异 | 0.0° |
-
-下面三项只是从同一批预测重新计算得到的Day63继承指标，不是Day64新增性能：
-
-| Day63继承指标 | 数值 |
-| --- | ---: |
-| 近端位置MAE | 0.0239 |
-| 方向MAE | 1.809° |
-| 双阈值达标率 | 82.66% |
-
-## 11. 可视化检查
-
-8张图覆盖最佳、典型、最差位置、最差方向、最低和最高不确定性。每行显示：
-
-```text
-原图 | Day62冻结掩码 | 中心线/预测/真值 | 状态与测量边界
-```
-
-- 青色：图像中心；
-- 黄色：Day63预测；
-- 紫色：标签中央参考行。
-
-样本37和132仍保留明显位置误差，说明坐标转换不能修复上游错行。它们应留到Day67失败
-分类和Day68单原因改进，而不是在Day64重新调整Day63。
-
-## 12. 代码结构
-
-主文件：
-
-```text
-64_crop_row_camera_coordinates_measurement/code/day64_camera_measurement.py
-```
-
-关键函数：
-
-- `normalized_to_pixel`：归一化坐标转像素；
-- `image_coordinate_measurement`：偏移、方向和单线外推代理；
-- `estimate_vanishing_point`：多线稳健交点与病态拒绝；
-- `project_pixel_to_camera_ray`：有内参时反投影相机射线；
-- `ground_plane_measurement`：有地面变换时输出米制合同；
-- `run_day64_study`：加载冻结Day63模型并生成完整结果。
-
-## 13. 本地产物
-
-```text
-D:/DL_code/data/crop_row_perception/day64_camera_measurement/day64_results.json
-D:/DL_code/data/crop_row_perception/day64_camera_measurement/coordinate_metrics.csv
-D:/DL_code/data/crop_row_perception/day64_camera_measurement/coordinate_contact_sheet.jpg
-```
-
-数据图片、逐图CSV和运行结果不进入Git。
-
-## 14. 复现命令
+## 12. 复现命令
 
 ```powershell
 D:\conda\envs\forest-species\python.exe -X utf8 `
   64_crop_row_camera_coordinates_measurement\code\day64_camera_measurement.py `
-  --day63-model D:\DL_code\data\crop_row_perception\day63_crop_row_geometry\day63_geometry_v2.joblib `
+  --mode multirow `
+  --train-root D:\DL_code\data\crop_row_perception\sources\crdld_v2_1\data\train_data `
+  --train-manifest projects\04_crop_row_perception\data\scoped_crdld\crdld_train_development_manifest.jsonl `
+  --train-probability-cache D:\DL_code\data\crop_row_perception\day63_crop_row_geometry\day63_resnet18_train_oof_probabilities.npz `
   --validation-root D:\DL_code\data\crop_row_perception\sources\crdld_v2_1\data\validation_data `
   --validation-manifest projects\04_crop_row_perception\data\scoped_crdld\crdld_validation_development_manifest.jsonl `
+  --validation-probability-cache D:\DL_code\data\crop_row_perception\day63_crop_row_geometry\day63_resnet18_validation_oof_probabilities.npz `
   --output-dir D:\DL_code\data\crop_row_perception\day64_camera_measurement `
   --count 8
 ```
 
-## 15. Day64评价与Day65交接
+## 13. Day64最终评价与Day65交接
 
-作为Day64学习任务，本次结果达到要求：图像中心、归一化偏移、方向代理、消失点条件、
-相机射线和地面测量的层次已经明确；冻结模型复算完全一致；无法支持的物理量被显式阻塞。
+Day64现在已经与新项目四对齐：检测到的多条作物行用于确定左右边界；白色中线才是图像
+走廊中心；多条行共同估计图像消失点；中央作物行不会被直接当成行驶目标。核心测量门
+全部通过，结果满意，无需再做第三轮Day64坐标优化。
 
-作为真实农业机器人测量系统不能称为完成：没有真实相机内外参、畸变标定、相机安装姿态、
-地面变换、真实消失点、米制误差评价或机器人闭环验证。
-
-Day65可以对 `lateral_offset_norm`、`heading_proxy_deg`、`confidence`、`uncertainty` 和
-`status` 做视频时序稳定，但不得对不存在的米制量进行平滑。
-
-```text
-DAY64_LESSON_COMPLETE
-DAY63_V2_INPUT_FROZEN
-IMAGE_COORDINATE_CONTRACT_PASS
-DAY63_HEADING_REPRODUCTION_EXACT
-VANISHING_POINT_BLOCKED_SINGLE_LINE
-CAMERA_RAY_BLOCKED_NO_CALIBRATION
-METRIC_MEASUREMENT_BLOCKED_NO_GROUND_TRANSFORM
-READY_FOR_DAY65_TEMPORAL_STABILITY
-REAL_ROBOT_CONTROL_NOT_ESTABLISHED
-```
+Day65必须处理视频时序稳定、行身份连续、漏检恢复、走廊切换和false-valid抑制。即使
+Day65完成，在Day69冻结外部测试、标定与实车数据到位之前，也只能称为离线农业机器人
+视觉Pilot，不能称为可安全控制真实机器人。

@@ -70,14 +70,15 @@ entries:
 
   - id: day64_camera_coordinates_measurement
     role: measurement_definition
-    status: IMAGE_COORDINATE_CONTRACT_PASS_PHYSICAL_MEASUREMENT_BLOCKED
+    status: MULTIROW_IMAGE_CORRIDOR_MEASUREMENT_PASS_SAFETY_AND_PHYSICAL_BLOCKED
     evidence: ../../64_crop_row_camera_coordinates_measurement/code/day64_notes.md
-    local_output: D:/DL_code/data/crop_row_perception/day64_camera_measurement/day64_results.json
-    input_method: day63_extra_depth12_leaf2_frozen
-    allowed_use: 为Day65提供图像平面归一化偏移、方向代理、置信度、不确定性和状态
-    forbidden_use: 将单线外推点称为真实消失点，将像素或归一化偏移称为米制误差，或声明真实航向与机器人控制可靠性
-    consistency_result: 248张已复用开发图的Day63方向复算最大绝对差为0度
-    vanishing_point_status: BLOCKED_SINGLE_LINE
+    local_output: D:/DL_code/data/crop_row_perception/day64_camera_measurement/day64_results_multirow.json
+    input_method: day63_partition_matched_three_fold_resnet18_centerline_oof
+    allowed_use: 为Day65提供多行身份、左右相邻边界、图像走廊中心、归一化偏移、方向代理、多线图像消失点、行间距、置信度和状态
+    forbidden_use: 将图像走廊称为真实车体安全边界，将像素或归一化量称为米制测量，或声明真实航向与机器人控制可靠性
+    development_metrics: boundary_pair_accuracy_0.9185; corridor_center_mae_0.0146; corridor_heading_mae_1.186deg; vp_available_0.9987; vp_median_error_0.0195
+    vanishing_point_status: AVAILABLE_MULTI_LINE_IMAGE_COORDINATES
+    safety_blocker: unsafe_false_valid_0.1314_exceeds_0.05
     camera_calibration_available: false
     metric_measurement_available: false
     validation_is_untouched: false
