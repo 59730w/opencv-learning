@@ -1,8 +1,16 @@
 schema_version: 1
 project_id: 04_crop_row_perception
-updated: 2026-09-04
+updated: 2026-09-05
 
 entries:
+  - id: day59_target_contract_v2
+    role: target_contract
+    status: PASS_MULTI_ROW_SCOPE_DATA_REAUDIT_REQUIRED
+    evidence: target_contract.yaml; ../../59_crop_row_perception_contract/code/day59_notes.md
+    allowed_use: 定义所有可评价可见作物行、相机中心左右边界、图像走廊中心、多线消失点和评价指标
+    forbidden_use: 将中央作物行当作行驶中心，或把图像边界称为真实机器人车体/安全边界
+    next_gate: 补充多行标签可分离性、可见性和走廊真值审计后重新学习Day63
+
   - id: day61_scoped_data_gate
     role: active_learning_scope
     status: PASS

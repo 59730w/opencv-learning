@@ -7,8 +7,12 @@ import yaml
 
 
 REQUIRED_METRICS = {
-    "bottom_position_mae_norm",
-    "heading_mae_deg",
+    "row_detection_precision",
+    "row_detection_recall",
+    "matched_bottom_position_mae_norm",
+    "matched_heading_mae_deg",
+    "corridor_boundary_pair_accuracy",
+    "corridor_center_mae_norm",
     "supported_valid_recall",
     "unsafe_false_valid_rate",
     "runtime_median_ms",
@@ -45,23 +49,40 @@ def main() -> None:
 
     assert contract["gate"]["verdict"] == "PASS"
     assert contract["project"]["id"] == "04_crop_row_perception"
+    assert contract["schema_version"] == 2
+    assert contract["project"]["task_type"] == "monocular_rgb_multi_crop_row_and_corridor_estimation"
     assert contract["output_contract"]["coordinate_system"]["pixel_origin"] == "top_left"
     assert contract["output_contract"]["status"]["enum"] == ["valid", "degraded", "reject"]
+    required_fields = set(contract["output_contract"]["required_fields"])
+    assert {
+        "crop_rows",
+        "corridor_left_boundary",
+        "corridor_right_boundary",
+        "corridor_centerline_points_norm",
+        "vanishing_point_norm",
+        "row_spacing_norm",
+    } <= required_fields
+    assert contract["output_contract"]["corridor_selection"]["crop_row_is_drivable_center"] is False
+    assert contract["output_contract"]["corridor_selection"]["physical_robot_frame_available"] is False
     metric_ids = {item["id"] for item in contract["metrics_and_thresholds"]}
     assert metric_ids == REQUIRED_METRICS
     external_gate = contract["acceptance_rules"]["frozen_external_gate"]
     assert external_gate["independent_source_required"] is True
     assert external_gate["same_absolute_thresholds_as_internal"] is True
-    assert external_gate["gap_limits"]["bottom_position_mae_norm"] == "<= 0.02"
-    assert external_gate["gap_limits"]["heading_mae_deg"] == "<= 3.0"
+    assert external_gate["gap_limits"]["matched_bottom_position_mae_norm"] == "<= 0.02"
+    assert external_gate["gap_limits"]["matched_heading_mae_deg"] == "<= 3.0"
     assert external_gate["gap_limits"]["unsafe_false_valid_rate"] == "<= 0.03"
     assert "external_threshold_failure" in external_gate["blocking_conditions"]
 
     roles = {item["role"]: item["status"] for item in registry["entries"]}
     assert roles["background_reference"] == "AVAILABLE"
-    assert roles["id_development"] in {"NOT_AVAILABLE", "BLOCKED"}
+    assert roles["id_development"] in {
+        "NOT_AVAILABLE", "BLOCKED", "AVAILABLE_WITH_RESTRICTIONS"
+    }
     assert roles["ood_development"] in {"NOT_AVAILABLE", "BLOCKED"}
-    assert roles["frozen_external_test"] in {"NOT_AVAILABLE", "BLOCKED"}
+    assert roles["frozen_external_test"] in {
+        "NOT_AVAILABLE", "BLOCKED", "AVAILABLE_POSITIVE_ONLY"
+    }
 
     review = review_path.read_text(encoding="utf-8")
     assert review.count("https://github.com/") >= 7
@@ -72,6 +93,8 @@ def main() -> None:
     assert "首要待审查数据候选" in notes
     assert "尚未下载或实测" in notes
     assert "不能保证内部和外部结果都好" in notes
+    assert "DAY59_SCOPE_REVISED_FOR_MULTI_ROW" in notes
+    assert "作物行本身不是可通行走廊中心" in notes
 
     print("DAY59_TARGET_CONTRACT_PASS")
     print("DAY59_CONTRACT_OK")

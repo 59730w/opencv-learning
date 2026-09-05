@@ -10,11 +10,11 @@ import pytest
 CODE_DIR = Path(__file__).resolve().parents[1] / "code"
 sys.path.insert(0, str(CODE_DIR))
 
-from day59_geometry import (  # noqa: E402
-    NormalizedPoint,
-    compute_path_errors,
-    normalize_pixel,
-)
+import day59_geometry  # noqa: E402
+
+NormalizedPoint = day59_geometry.NormalizedPoint
+compute_path_errors = day59_geometry.compute_path_errors
+normalize_pixel = day59_geometry.normalize_pixel
 
 
 def test_normalize_pixel_maps_image_corners_to_unit_square() -> None:
@@ -71,3 +71,45 @@ def test_normalized_point_and_path_order_are_validated() -> None:
             near=NormalizedPoint(0.5, 0.5),
             far=NormalizedPoint(0.5, 0.7),
         )
+
+
+def test_corridor_center_is_midpoint_of_nearest_left_and_right_crop_rows() -> None:
+    assert hasattr(day59_geometry, "CropRowGeometry")
+    assert hasattr(day59_geometry, "select_camera_corridor")
+    CropRowGeometry = day59_geometry.CropRowGeometry
+    select_camera_corridor = day59_geometry.select_camera_corridor
+    rows = [
+        CropRowGeometry(NormalizedPoint(0.15, 0.9), NormalizedPoint(0.35, 0.4)),
+        CropRowGeometry(NormalizedPoint(0.38, 0.9), NormalizedPoint(0.46, 0.4)),
+        CropRowGeometry(NormalizedPoint(0.66, 0.9), NormalizedPoint(0.55, 0.4)),
+        CropRowGeometry(NormalizedPoint(0.91, 0.9), NormalizedPoint(0.66, 0.4)),
+    ]
+
+    corridor = select_camera_corridor(rows)
+
+    assert corridor.left.near.x == pytest.approx(0.38)
+    assert corridor.right.near.x == pytest.approx(0.66)
+    assert corridor.center_near == NormalizedPoint(0.52, 0.9)
+    assert corridor.center_far == NormalizedPoint(0.505, 0.4)
+
+
+def test_corridor_requires_crop_rows_on_both_sides() -> None:
+    CropRowGeometry = day59_geometry.CropRowGeometry
+    select_camera_corridor = day59_geometry.select_camera_corridor
+    rows = [CropRowGeometry(NormalizedPoint(0.2, 0.9), NormalizedPoint(0.4, 0.4))]
+
+    with pytest.raises(ValueError, match="both sides"):
+        select_camera_corridor(rows)
+
+
+def test_crop_row_on_camera_center_is_not_treated_as_drivable_center() -> None:
+    CropRowGeometry = day59_geometry.CropRowGeometry
+    select_camera_corridor = day59_geometry.select_camera_corridor
+    rows = [
+        CropRowGeometry(NormalizedPoint(0.3, 0.9), NormalizedPoint(0.43, 0.4)),
+        CropRowGeometry(NormalizedPoint(0.5, 0.9), NormalizedPoint(0.5, 0.4)),
+        CropRowGeometry(NormalizedPoint(0.7, 0.9), NormalizedPoint(0.57, 0.4)),
+    ]
+
+    with pytest.raises(ValueError, match="crop row intersects"):
+        select_camera_corridor(rows)
