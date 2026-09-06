@@ -1,6 +1,6 @@
 schema_version: 1
 project_id: 04_crop_row_perception
-updated: 2026-09-05
+updated: 2026-09-06
 
 entries:
   - id: day59_target_contract_v2
@@ -9,7 +9,7 @@ entries:
     evidence: target_contract.yaml; ../../59_crop_row_perception_contract/code/day59_notes.md
     allowed_use: 定义所有可评价可见作物行、相机中心左右边界、图像走廊中心、多线消失点和评价指标
     forbidden_use: 将中央作物行当作行驶中心，或把图像边界称为真实机器人车体/安全边界
-    next_gate: Day65多行视频时序、身份关联和不安全false-valid降低
+    next_gate: Day66完整离线视频Pilot
 
   - id: day60_multirow_label_supplement
     role: scoped_data_audit
@@ -83,6 +83,24 @@ entries:
     metric_measurement_available: false
     validation_is_untouched: false
     same_source_internal_benchmark_accessed: false
+    frozen_external_accessed: false
+
+  - id: day65_video_temporal_stability
+    role: temporal_development_experiment
+    status: ENGINEERING_PASS_REAL_VIDEO_SAFETY_BLOCKED
+    evidence: ../../65_crop_row_video_temporal_stability/code/day65_notes.md
+    local_output: D:/DL_code/data/crop_row_perception/day65_video_temporal_verified/day65_results.json
+    input_method: frozen_day63_resnet18_plus_day64_image_corridor_contract
+    development_scope: LeCropFollow_CROW_25_episodes_10995_ordered_frames
+    selected_method: two_frame_forward_backward_optical_flow_ordered_DP_identity_confidence_weighted_Kalman_reject_hysteresis
+    development_metrics: raw_valid_0.1314; temporal_valid_0.0446; valid_retention_0.3391; center_jitter_reduction_0.8400; status_switch_reduction_0.8889; corridor_switch_reduction_0.5037
+    engineering_checks: 7_of_7_PASS
+    allowed_use: 为Day66完整离线Pilot提供多行身份、稳定走廊中心、短时恢复、走廊重选确认和valid_candidate_degraded_reject状态
+    forbidden_use: 将合成不安全false-valid等同真实视频安全率，使用冻结测试调参，或声明外部泛化、实车安全和闭环控制可靠性
+    real_video_safety_gate: BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH
+    timebase_note: 仅使用视频有序帧；不声明毫秒同步、里程计同步或物理时间动态
+    data_license_status: NOT_VERIFIED_NO_VIDEO_REDISTRIBUTION
+    frozen_same_source_video_episodes_accessed: false
     frozen_external_accessed: false
 
   - id: day59_open_source_review
