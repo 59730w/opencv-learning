@@ -15,16 +15,18 @@ CRDLD 与 RowDetr 已完成下载和实测：CRDLD 可作受限 ID 开发候选�
 |---|---|---|---|
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
 | 数据可行性 | SCOPED PASS / FULL BLOCKED | 2026-09-02 | 正样本学习可继续；许可、最高分组与拒识负样本仍阻断完整声明 |
-| 环境 | NOT_AVAILABLE | — | 前两门通过后执行 |
-| 管线试运行 | NOT_AVAILABLE | — | 后续执行 |
-| 内部有效性 | NOT_AVAILABLE | — | 后续执行 |
-| 基线/OOD开发 | NOT_AVAILABLE | — | 后续执行 |
+| 环境 | SCOPED PASS | 2026-09-02 | 受限同源正样本学习环境可执行；不解除完整数据门阻断 |
+| 管线试运行 | ENGINEERING PASS | 2026-09-07 | Day61–66管线、视频对齐、状态约束与运行时门通过 |
+| 内部有效性 | SCOPED PASS / SAFETY BLOCKED | 2026-09-05 | 多行几何与测量门通过；unsafe false-valid及真实视频安全未通过 |
+| 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-07 | 开发视频Pilot完成；无逐帧真值，不声明真实视频准确率 |
 | 冻结外部测试 | NOT_AVAILABLE | — | 后续执行 |
-| 交付 | NOT_AVAILABLE | — | Day70 执行 |
+| 交付 | DAY66 ENGINEERING DELIVERED / FINAL BLOCKED | 2026-09-07 | Day66代码已交付；完整项目交付留到Day70 |
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
-Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当天学习已完成，不表示项目可以继续进入环境或管线开发。
+Day60 后用户明确将执行范围收窄为“同源正样本几何与工程开发”，因此允许沿受限路径完成
+Day61–66；这不等于完整数据门通过，也不允许把管线工程结果提升为真实视频安全、独立外部
+泛化或实车部署证据。冻结外部测试仍需等参数、评价协议和证据边界全部锁定后再执行。
 
 ## Day59 产物
 

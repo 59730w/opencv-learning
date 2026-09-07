@@ -1,6 +1,8 @@
 # Day66 Offline Video Pilot Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** Executed and verified on 2026-09-07. The user reviewed Day66 v2 and then authorized README/Skill updates plus GitHub delivery.
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Completed steps are recorded with checked boxes.
 
 **Goal:** Build and execute a complete, reproducible Day66 offline video pilot using the frozen Day65 temporal configuration, producing continuous overlays, contract-shaped frame records, runtime evidence, and an evidence-bounded Chinese learning note.
 
@@ -10,7 +12,7 @@
 
 ## Global Constraints
 
-- Work in `D:/opencv-learning` on the user-authorized current `main` checkout; do not commit or push.
+- During implementation, work in `D:/opencv-learning` on the user-authorized current `main` checkout and do not commit or push before the review gate. That gate was later approved.
 - Use only `temporal_development` and `shifted_development` CROW roles; never open, infer, render, tune, or audit `frozen_same_source_holdout`.
 - The Day65 selected parameters and optical-flow setting are immutable during Day66.
 - Improvement is allowed only if a preregistered Day66 acceptance check fails, and only against development evidence; every attempt must be retained and the frozen group remains inaccessible.
@@ -32,10 +34,10 @@
 - Consumes: accepted `day65_results.json`, Day65 `TemporalConfig`, Day65 frame records.
 - Produces: `load_and_verify_frozen_config(config_path, day65_result_path) -> tuple[TemporalConfig, bool, dict]` and `project_navigation_contract(record) -> dict`.
 
-- [ ] **Step 1: Write failing tests** for exact frozen values, mismatch rejection, candidate-to-degraded mapping, and null navigation fields outside `valid`.
-- [ ] **Step 2: Run focused pytest with a new project-local `--basetemp`** and verify failure is caused by the missing Day66 module.
-- [ ] **Step 3: Add the selected Day65 JSON values** and the minimal loader/projection implementation. Verify both file SHA-256 values are recorded and `TemporalConfig()` defaults are never used implicitly.
-- [ ] **Step 4: Re-run focused tests** and require all Task 1 tests to pass.
+- [x] **Step 1: Write failing tests** for exact frozen values, mismatch rejection, candidate-to-degraded mapping, and null navigation fields outside `valid`.
+- [x] **Step 2: Run focused pytest with a new project-local `--basetemp`** and verify failure is caused by the missing Day66 module.
+- [x] **Step 3: Add the selected Day65 JSON values** and the minimal loader/projection implementation. Verify both file SHA-256 values are recorded and `TemporalConfig()` defaults are never used implicitly.
+- [x] **Step 4: Re-run focused tests** and require all Task 1 tests to pass.
 
 ### Task 2: Continuous, truthful overlay rendering
 
@@ -47,10 +49,10 @@
 - Consumes: source BGR frame and projected Day66 record.
 - Produces: `draw_pilot_overlay(frame, record) -> np.ndarray` with row IDs, selected left/right boundaries, valid-only center, confidence, pilot/public state, and reason.
 
-- [ ] **Step 1: Add failing image tests** proving row-ID labels and selected boundaries alter expected regions while candidate/degraded/reject frames never draw a navigation center.
-- [ ] **Step 2: Run the new tests and observe expected failures.**
-- [ ] **Step 3: Implement the overlay** with fixed color semantics and bounded text layout suitable for 320x180 source videos.
-- [ ] **Step 4: Re-run focused tests** and require green.
+- [x] **Step 1: Add failing image tests** proving row-ID labels and selected boundaries alter expected regions while candidate/degraded/reject frames never draw a navigation center.
+- [x] **Step 2: Run the new tests and observe expected failures.**
+- [x] **Step 3: Implement the overlay** with fixed color semantics and bounded text layout suitable for 320x180 source videos.
+- [x] **Step 4: Re-run focused tests** and require green.
 
 ### Task 3: Episode and manifest pilot runner
 
@@ -62,11 +64,11 @@
 - Consumes: one manifest development entry, frozen predictor/config, output directory.
 - Produces: `run_episode_pilot(...) -> tuple[list[dict], dict]`, playable overlay MP4, frame-aligned JSONL, and `run_day66_pilot(...) -> dict`.
 
-- [ ] **Step 1: Add failing tiny-video integration tests** for exact frame alignment, readable output video, fresh tracker state, development-role selection, frozen-role non-access, checksums, and incomplete-decode failure.
-- [ ] **Step 2: Run the integration tests and observe expected failures.**
-- [ ] **Step 3: Implement the minimum second-pass overlay/JSONL writer and aggregate runner.** Preserve Day65 perception behavior and add no tuning knobs for temporal parameters.
-- [ ] **Step 4: Add acceptance checks** for 25 episodes, 10,995 frames, all complete decodes, all output videos readable, navigation invariants, exact config match, allowed roles only, and frozen access false.
-- [ ] **Step 5: Re-run Day66 tests** and require green.
+- [x] **Step 1: Add failing tiny-video integration tests** for exact frame alignment, readable output video, fresh tracker state, development-role selection, frozen-role non-access, checksums, and incomplete-decode failure.
+- [x] **Step 2: Run the integration tests and observe expected failures.**
+- [x] **Step 3: Implement the minimum second-pass overlay/JSONL writer and aggregate runner.** Preserve Day65 perception behavior and add no tuning knobs for temporal parameters.
+- [x] **Step 4: Add acceptance checks** for 25 episodes, 10,995 frames, all complete decodes, all output videos readable, navigation invariants, exact config match, allowed roles only, and frozen access false.
+- [x] **Step 5: Re-run Day66 tests** and require green.
 
 ### Task 4: Reproducible CPU runtime benchmark and CLI
 
@@ -77,10 +79,10 @@
 **Interfaces:**
 - Produces: `benchmark_canonical_cpu(...) -> dict`, CLI arguments limited to paths/device/batch/render/benchmark controls, and marker output.
 
-- [ ] **Step 1: Add failing tests** for warm-up exclusion, finite median/p95, declared 640x360 boundary, and absence of mutable Day65 threshold CLI flags.
-- [ ] **Step 2: Run and observe expected failures.**
-- [ ] **Step 3: Implement the benchmark and CLI.** Benchmark inference plus temporal measurement only, excluding video decode and overlay encoding; use batch size one and `torch.inference_mode()` through the frozen predictor.
-- [ ] **Step 4: Re-run Day66 and Day65 regression tests.**
+- [x] **Step 1: Add failing tests** for warm-up exclusion, finite median/p95, declared 640x360 boundary, and absence of mutable Day65 threshold CLI flags.
+- [x] **Step 2: Run and observe expected failures.**
+- [x] **Step 3: Implement the benchmark and CLI.** Benchmark inference plus temporal measurement only, excluding video decode and overlay encoding; use batch size one and `torch.inference_mode()` through the frozen predictor.
+- [x] **Step 4: Re-run Day66 and Day65 regression tests.**
 
 ### Task 5: Smoke run and complete 25-video development pilot
 
@@ -91,11 +93,11 @@
 - Consumes: CROW manifest and frozen Day63 checkpoint.
 - Produces: 25 overlay MP4s, 25 JSONLs, `day66_results.json`, runtime evidence, and audit candidates.
 
-- [ ] **Step 1: Run one short development episode smoke test** with CUDA and verify video/frame/JSON alignment without changing parameters.
-- [ ] **Step 2: Inspect representative rendered frames** for legibility, row IDs, boundary selection, valid-only center, and status meaning. Fix only rendering/contract defects under new failing tests.
-- [ ] **Step 3: Run the complete 25-video pilot** using the frozen configuration.
-- [ ] **Step 4: Run the canonical CPU benchmark** on a preregistered development clip and retain the result even if the 50 ms threshold fails.
-- [ ] **Step 5: Validate output counts, hashes, decodability, aggregate checks, and frozen non-access.** If a check fails, preserve the failed attempt, add a regression test, and make only a development-bounded correction.
+- [x] **Step 1: Run one short development episode smoke test** with CUDA and verify video/frame/JSON alignment without changing parameters.
+- [x] **Step 2: Inspect representative rendered frames** for legibility, row IDs, boundary selection, valid-only center, and status meaning. Fix only rendering/contract defects under new failing tests.
+- [x] **Step 3: Run the complete 25-video pilot** using the frozen configuration.
+- [x] **Step 4: Run the canonical CPU benchmark** on a preregistered development clip and retain the result even if the 50 ms threshold fails.
+- [x] **Step 5: Validate output counts, hashes, decodability, aggregate checks, and frozen non-access.** If a check fails, preserve the failed attempt, add a regression test, and make only a development-bounded correction.
 
 ### Task 6: Visual audit and Day66 learning note
 
@@ -107,25 +109,25 @@
 - Consumes: verified Day66 results and stratified samples.
 - Produces: reviewable contact sheets and a Chinese evidence-bounded lesson record.
 
-- [ ] **Step 1: Generate deterministic samples** stratified by episode and `valid/candidate/degraded/reject`, plus switch/flow/rejection transitions.
-- [ ] **Step 2: Inspect the actual contact sheets and at least two complete overlay videos.** Record visible successes and failures without using unlabeled visual impressions as accuracy.
-- [ ] **Step 3: Write `day66_notes.md`** with objective, architecture, frozen configuration, TDD, complete-run metrics, runtime, visual audit, failed attempts, evidence boundaries, reproduction command, local artifacts, and Day67 handoff.
-- [ ] **Step 4: Write the asset README** identifying local-only outputs and licensing restrictions.
+- [x] **Step 1: Generate deterministic samples** stratified by episode and `valid/candidate/degraded/reject`, plus switch/flow/rejection transitions.
+- [x] **Step 2: Inspect the actual contact sheets and at least two complete overlay videos.** Record visible successes and failures without using unlabeled visual impressions as accuracy.
+- [x] **Step 3: Write `day66_notes.md`** with objective, architecture, frozen configuration, TDD, complete-run metrics, runtime, visual audit, failed attempts, evidence boundaries, reproduction command, local artifacts, and Day67 handoff.
+- [x] **Step 4: Write the asset README** identifying local-only outputs and licensing restrictions.
 
-### Task 7: Final verification without delivery
+### Task 7: Final verification and review-gated delivery
 
 **Files:**
-- Verify all new Day66 tracked files; do not modify root/project README or evidence registry until user review authorizes delivery.
+- Verify all new Day66 tracked files; modify root/project README and deliver only after user review authorizes it.
 
-- [ ] **Step 1: Run all Day63–66 tests** with a fresh project-local `--basetemp`.
-- [ ] **Step 2: Run syntax compilation and the Day66 artifact verifier.**
-- [ ] **Step 3: Re-run the learning repository scanner** and verify latest Day is 66 with no missing days.
-- [ ] **Step 4: Inspect `git diff --check`, `git status`, and the full Day66 diff.** Confirm no data, cache, model, or generated bulk artifact is tracked.
-- [ ] **Step 5: Stop for user review.** Do not commit, push, update GitHub, or mark remote delivery complete.
+- [x] **Step 1: Run all Day63–66 tests** with a fresh project-local `--basetemp`.
+- [x] **Step 2: Run syntax compilation and the Day66 artifact verifier.**
+- [x] **Step 3: Re-run the learning repository scanner** and verify latest Day is 66 with no missing days.
+- [x] **Step 4: Inspect `git diff --check`, `git status`, and the full Day66 diff.** Confirm no data, cache, model, or generated bulk artifact is tracked.
+- [x] **Step 5: Stop for user review, then commit and push only after explicit authorization.** The user approved delivery on 2026-09-07.
 
 ## Self-Review
 
-- Spec coverage: full pilot, overlays, row identities, corridor center, confidence, four diagnostic states, exact frozen config, development-only scope, runtime, visual QA, notes, and no GitHub upload are each assigned to a task.
+- Spec coverage: full pilot, overlays, row identities, corridor center, confidence, four diagnostic states, exact frozen config, development-only scope, runtime, visual QA, notes, and review-gated GitHub upload are each assigned to a task.
 - Evidence boundary: frozen same-source videos remain structurally excluded; real-video safety, metric calibration, external generalization, and robot readiness remain blocked.
 - Placeholder scan: no implementation requirement is deferred; Day67 failure grouping is intentionally outside Day66.
 - Type consistency: Task 1 produces projected records consumed by Tasks 2–6; Task 3 produces aggregate evidence consumed by Tasks 5–7.
