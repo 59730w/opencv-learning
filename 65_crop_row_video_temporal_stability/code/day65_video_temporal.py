@@ -195,6 +195,16 @@ def prepare_video_feature(image: np.ndarray, *, resolution: int = 192) -> np.nda
     return feature
 
 
+def prepare_optical_flow_frame(frame: np.ndarray) -> np.ndarray:
+    """Keep the frozen 320x180 flow pixel scale and never upscale smaller frames."""
+    height, width = frame.shape[:2]
+    scale = min(1.0, 320.0 / width, 180.0 / height)
+    if scale == 1.0:
+        return frame
+    target = (max(1, round(width * scale)), max(1, round(height * scale)))
+    return cv2.resize(frame, target, interpolation=cv2.INTER_AREA)
+
+
 def propagate_rows_optical_flow(
     previous_frame: np.ndarray,
     current_frame: np.ndarray,
@@ -892,7 +902,7 @@ def process_video_episode(
             flow_only_count = 0
         else:
             temporal_observations, flow_only_count = bridge.update(
-                frames[frame_index], plausible
+                prepare_optical_flow_frame(frames[frame_index]), plausible
             )
         temporal = tracker.update(temporal_observations)
         records.append(

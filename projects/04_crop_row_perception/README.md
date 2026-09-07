@@ -90,7 +90,7 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - 中央作物行位于相机中心时不生成行驶中心；两侧相邻边界中线才是图像走廊。安全false-valid仍为0.1314，未达到0.05，留给Day65时序与拒识；
 - 没有相机内参和地面变换，真实相机射线、米制行距和米制偏移保持 `BLOCKED`；
 - 本地结果：`D:/DL_code/data/crop_row_perception/day64_camera_measurement/`，数据图片和运行结果不纳入Git；
-- Day65将跟踪多行身份，并对走廊中心、消失点、偏移、方向、置信度和状态做视频时序稳定与失效判断。
+- Day65随后跟踪多行身份，并对走廊中心、消失点、偏移、方向、置信度和状态做视频时序稳定与失效判断。
 
 ## Day65 产物
 
@@ -102,7 +102,19 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 - 7项工程验收全部通过；合成缺边、中央作物行与不受支持场景均未错误发布有效导航；
 - 真实视频没有逐帧走廊有效性真值，所以工程门为`PASS`，真实视频安全门仍为`BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`；
 - 本地结果：`D:/DL_code/data/crop_row_perception/day65_video_temporal_verified/`，视频、逐帧结果和抽样图因许可未核验而不纳入Git；
-- Day66将冻结当前Day65配置，运行完整离线视频Pilot；不得在冻结测试视频上为了改善Demo继续调参。
+- Day66已冻结当前Day65配置并完成完整离线视频Pilot；未在冻结测试视频上为了改善Demo继续调参。
+
+## Day66 产物
+
+- `../../66_crop_row_offline_video_pilot/code/day66_offline_video_pilot.py`：冻结配置校验、完整视频Pilot、逐帧安全合同、连续叠加、CPU基准和分层视觉审计；
+- `../../66_crop_row_offline_video_pilot/code/day66_frozen_config.json`：与Day65正式结果逐字段一致的冻结时序配置；
+- `../../66_crop_row_offline_video_pilot/tests/test_day66_offline_video_pilot.py`：覆盖配置漂移、四态合同、非valid导航隔离、显示可读性、视频对齐、运行时边界和视觉审计；
+- `../../66_crop_row_offline_video_pilot/code/day66_notes.md`：记录第一轮性能失败、输出等价优化、显示第二版、正式全量重跑和负证据；
+- 25段开发视频、10,995帧全部输出帧对齐JSONL和连续MP4；状态为490 valid、47 candidate、10,436 degraded、22 reject，非valid导航泄漏为0；
+- 第二版画面显示所有活跃作物行及稳定ID、明确的LEFT/RIGHT边界、valid专属绿色中心、独立黄色方向箭头/角度、置信度、四态和原因；
+- 9项工程检查与Day61–66联合138项测试全部通过；640x360 CPU结果为中位41.14 ms、P95 49.33 ms，计时不含解码/缩放和叠加编码；
+- 6段冻结同源视频仍未访问；疑似草地/围栏valid留作Day67失败组，真实视频安全门继续为`BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`；
+- 本地结果：`D:/DL_code/data/crop_row_perception/day66_offline_video_pilot/`，视频、JSONL和审计图因许可未核验而不纳入Git；Day67下一步先建立可复核失败分组协议。
 
 ## 修订后的 Day59～Day70 路线
 
@@ -115,7 +127,7 @@ Day60 的审查工作已经完成，但数据门禁为 `BLOCKED`。这表示当�
 | 63 | 多作物行几何重学 | OOF检测全部可评价行，输出有序行、左右边界和图像走廊候选；核心几何门通过 |
 | 64 | 多行坐标与测量边界 | 用左右相邻行得到走廊中心、偏移、方向、行距和多线消失点，不伪造米制测量 |
 | 65 | 多行视频时序与安全状态 | 已完成：保持多行身份、平滑走廊、短遮挡恢复和显式拒绝；真实视频安全率因缺真值仍阻塞 |
-| 66 | 完整离线Pilot | RGB视频端到端输出多行、边界、走廊中心、方向、置信度和valid/degraded/reject |
+| 66 | 完整离线Pilot | 已完成：输出多行/ID、边界、valid专属中心、独立方向代理、置信度、四态和原因；真实视频安全仍阻塞 |
 | 67 | 失败案例分组 | 定量分类杂草、遮挡、缺行、中央作物行、地头、转弯、光照和时序切换失败 |
 | 68 | 一轮受控改进 | 只针对Day67最主要且可由现有开发证据解决的失败原因改进并重新过门 |
 | 69 | 冻结测试 | 冻结模型与阈值后一次访问CRDLD内部基准和RowDetr外部正样本；缺负样本则安全门保持BLOCKED |

@@ -787,7 +787,7 @@ def match_ordered_crop_rows(
 def _validate_binary_mask(mask: np.ndarray) -> None:
     if mask.ndim != 2 or mask.dtype != np.uint8:
         raise ValueError("expected a two-dimensional uint8 binary mask")
-    if not set(np.unique(mask)).issubset({0, 255}):
+    if not bool(np.all((mask == 0) | (mask == 255))):
         raise ValueError("binary mask values must be 0 or 255")
 
 

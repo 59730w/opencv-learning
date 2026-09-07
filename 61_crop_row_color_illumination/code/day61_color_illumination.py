@@ -48,9 +48,14 @@ def normalized_exg(image_bgr: np.ndarray) -> np.ndarray:
 
 def gray_world_balance(image_bgr: np.ndarray) -> np.ndarray:
     """Reduce global color cast by equalizing BGR means with bounded gains."""
+    return fast_gray_world_balance(image_bgr)
+
+
+def fast_gray_world_balance(image_bgr: np.ndarray) -> np.ndarray:
+    """Preserve the frozen Gray-World pixels while using OpenCV's fast channel means."""
     _check_bgr(image_bgr)
     image_float = image_bgr.astype(np.float32)
-    channel_means = image_float.reshape(-1, 3).mean(axis=0)
+    channel_means = np.asarray(cv2.mean(image_bgr)[:3], dtype=np.float32)
     target_mean = float(channel_means.mean())
     gains = np.clip(
         target_mean / np.maximum(channel_means, 1.0),

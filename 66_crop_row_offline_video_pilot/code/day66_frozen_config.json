@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "source_marker": "DAY65_TEMPORAL_DEVELOPMENT_COMPLETE",
+  "selected_config": {
+    "association_gate": 0.25,
+    "max_missing_frames": 8,
+    "confirm_frames": 2,
+    "recovery_frames": 1,
+    "switch_confirm_frames": 6,
+    "confirmation_window_frames": 8,
+    "process_variance": 0.00001,
+    "measurement_variance": 0.0025,
+    "minimum_row_confidence": 0.12
+  },
+  "optical_flow_enabled": true,
+  "allowed_roles": [
+    "temporal_development",
+    "shifted_development"
+  ],
+  "frozen_role": "frozen_same_source_holdout",
+  "freeze_policy": "Day66 must not tune these values or access frozen_same_source_holdout videos."
+}

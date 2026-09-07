@@ -94,11 +94,16 @@ V2_DIRECTIONAL_CONFIGS: list[dict[str, Any]] = [
 ]
 
 
+def binary_mask_values_are_valid(mask: np.ndarray) -> bool:
+    """Check the binary value set in one vectorized pass."""
+    return bool(np.all((mask == 0) | (mask == 255)))
+
+
 def validate_binary_mask(mask: np.ndarray) -> None:
     """Require a two-dimensional uint8 mask containing only 0 and 255."""
     if mask.ndim != 2 or mask.dtype != np.uint8:
         raise ValueError("expected a two-dimensional uint8 mask")
-    if not set(np.unique(mask)).issubset({0, 255}):
+    if not binary_mask_values_are_valid(mask):
         raise ValueError("binary mask values must be 0 or 255")
 
 
@@ -200,6 +205,21 @@ def filter_components_perspective(
     exponent: float = 1.0,
 ) -> np.ndarray:
     """Use a smaller area threshold near the image top where plants appear smaller."""
+    return filter_components_perspective_vectorized(
+        mask,
+        base_area_fraction=base_area_fraction,
+        top_scale=top_scale,
+        exponent=exponent,
+    )
+
+
+def filter_components_perspective_vectorized(
+    mask: np.ndarray,
+    base_area_fraction: float,
+    top_scale: float = 0.4,
+    exponent: float = 1.0,
+) -> np.ndarray:
+    """Apply the frozen perspective rule with one label lookup instead of N scans."""
     validate_binary_mask(mask)
     if base_area_fraction < 0:
         raise ValueError("base_area_fraction must be non-negative")
@@ -210,16 +230,15 @@ def filter_components_perspective(
     count, labels, stats, centroids = cv2.connectedComponentsWithStats(
         mask, connectivity=8
     )
-    output = np.zeros_like(mask)
     denominator = max(1, mask.shape[0] - 1)
     base_area = mask.size * base_area_fraction
-    for label in range(1, count):
-        center_y = float(centroids[label, 1]) / denominator
-        scale = top_scale + (1.0 - top_scale) * center_y**exponent
-        min_area = max(1, math.ceil(base_area * scale))
-        if int(stats[label, cv2.CC_STAT_AREA]) >= min_area:
-            output[labels == label] = 255
-    return output
+    keep = np.zeros(count, dtype=bool)
+    if count > 1:
+        center_y = centroids[1:, 1] / denominator
+        scales = top_scale + (1.0 - top_scale) * np.power(center_y, exponent)
+        minimum_areas = np.maximum(1, np.ceil(base_area * scales)).astype(np.int64)
+        keep[1:] = stats[1:, cv2.CC_STAT_AREA] >= minimum_areas
+    return (keep[labels].astype(np.uint8) * 255)
 
 
 def vertical_line_support_metrics(

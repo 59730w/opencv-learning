@@ -12,6 +12,7 @@ sys.path.insert(0, str(CODE_DIR))
 from day62_morphology_regions import (
     acceptance_checks,
     apply_morphology,
+    binary_mask_values_are_valid,
     choose_candidate,
     clean_candidate_mask,
     component_records,
@@ -19,6 +20,7 @@ from day62_morphology_regions import (
     evaluate_configurations,
     filter_components_by_area,
     filter_components_perspective,
+    filter_components_perspective_vectorized,
     region_change_metrics,
     select_v2_from_fold_summaries,
     split_cv_folds,
@@ -34,6 +36,16 @@ def test_validate_binary_mask_rejects_wrong_dtype_and_nonbinary_values() -> None
         validate_binary_mask(np.zeros((8, 8), dtype=np.float32))
     with pytest.raises(ValueError, match="0 or 255"):
         validate_binary_mask(np.full((8, 8), 17, dtype=np.uint8))
+
+
+def test_fast_binary_value_check_matches_binary_contract() -> None:
+    valid = np.zeros((32, 40), dtype=np.uint8)
+    valid[::3, ::4] = 255
+    invalid = valid.copy()
+    invalid[9, 11] = 17
+
+    assert binary_mask_values_are_valid(valid) is True
+    assert binary_mask_values_are_valid(invalid) is False
 
 
 def test_open_then_close_removes_speck_and_fills_hole_without_mutating_input() -> None:
@@ -283,6 +295,34 @@ def test_perspective_filter_keeps_small_top_region_but_rejects_same_size_at_bott
 
     assert filtered[9, 11] == 255
     assert filtered[89, 71] == 0
+
+
+def test_vectorized_perspective_filter_exactly_matches_reference_component_loop() -> None:
+    mask = np.zeros((96, 128), dtype=np.uint8)
+    rng = np.random.default_rng(66)
+    for _ in range(70):
+        x = int(rng.integers(0, 124))
+        y = int(rng.integers(0, 92))
+        width = int(rng.integers(1, 5))
+        height = int(rng.integers(1, 5))
+        cv2.rectangle(mask, (x, y), (min(127, x + width), min(95, y + height)), 255, -1)
+    cv2.rectangle(mask, (40, 35), (75, 88), 255, -1)
+    count, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    expected = np.zeros_like(mask)
+    denominator = max(1, mask.shape[0] - 1)
+    base_area = mask.size * 0.00020
+    for label in range(1, count):
+        center_y = float(centroids[label, 1]) / denominator
+        scale = 0.40 + 0.60 * center_y
+        minimum = max(1, int(np.ceil(base_area * scale)))
+        if int(stats[label, cv2.CC_STAT_AREA]) >= minimum:
+            expected[labels == label] = 255
+
+    actual = filter_components_perspective_vectorized(
+        mask, base_area_fraction=0.00020, top_scale=0.40, exponent=1.0
+    )
+
+    assert np.array_equal(actual, expected)
 
 
 def test_vertical_metrics_reward_continuous_support_across_row_bands() -> None:

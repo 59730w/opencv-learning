@@ -43,6 +43,24 @@ def test_gray_world_keeps_neutral_gray_and_reduces_channel_cast() -> None:
     assert after_spread < before_spread
 
 
+def test_fast_gray_world_is_pixel_exact_to_frozen_numpy_reference() -> None:
+    rng = np.random.default_rng(66)
+    image = rng.integers(0, 256, (73, 91, 3), dtype=np.uint8)
+    image_float = image.astype(np.float32)
+    channel_means = image_float.reshape(-1, 3).mean(axis=0)
+    target_mean = float(channel_means.mean())
+    gains = np.clip(
+        target_mean / np.maximum(channel_means, 1.0),
+        lesson.GRAYWORLD_GAIN_MIN,
+        lesson.GRAYWORLD_GAIN_MAX,
+    )
+    expected = np.clip(image_float * gains, 0, 255).astype(np.uint8)
+
+    actual = lesson.fast_gray_world_balance(image)
+
+    assert np.array_equal(actual, expected)
+
+
 def test_grayworld_hsv_returns_binary_mask_without_mutating_input() -> None:
     image = np.full((20, 30, 3), (120, 80, 50), dtype=np.uint8)
     image[:, :10] = (20, 150, 20)

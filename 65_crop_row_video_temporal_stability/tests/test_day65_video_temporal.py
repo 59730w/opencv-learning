@@ -27,6 +27,7 @@ from day65_video_temporal import (  # noqa: E402
     process_video_episode,
     propagate_rows_optical_flow,
     prepare_video_feature,
+    prepare_optical_flow_frame,
     run_day65_video_study,
     temporal_acceptance_checks,
     draw_temporal_overlay,
@@ -97,6 +98,14 @@ def test_geometrically_implausible_rows_are_removed() -> None:
     kept = filter_plausible_rows(rows)
 
     assert [item.near_x_norm for item in kept] == [0.15, 0.40, 0.60]
+
+
+def test_optical_flow_keeps_frozen_pixel_scale_for_larger_video_frames() -> None:
+    canonical = np.zeros((360, 640, 3), dtype=np.uint8)
+    source_native = np.zeros((180, 320, 3), dtype=np.uint8)
+
+    assert prepare_optical_flow_frame(canonical).shape == (180, 320, 3)
+    assert prepare_optical_flow_frame(source_native) is source_native
 
 
 def test_ordered_tracking_preserves_ids_while_rows_move() -> None:
