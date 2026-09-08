@@ -1,0 +1,48 @@
+{
+  "schema_version": 3,
+  "protocol_id": "DAY67_EVENT_REVIEW_V3",
+  "random_seed": 6703,
+  "context_frames": 12,
+  "target_nonvalid_review_events": 240,
+  "minimum_review_events_per_stratum": 10,
+  "sampling_design": "valid_census_plus_seeded_srswor_within_predeclared_strata",
+  "analysis_design": "horvitz_thompson_event_weights_plus_observed_episode_support",
+  "allowed_roles": [
+    "temporal_development",
+    "shifted_development"
+  ],
+  "reviewability": [
+    "reviewable",
+    "ungradable"
+  ],
+  "navigation_assessments": [
+    "appropriate",
+    "suspected_unsafe",
+    "not_applicable",
+    "ungradable"
+  ],
+  "visual_labels": {
+    "suspected_ood_valid": {"severity": 5, "actionable_day68": true},
+    "wrong_corridor_or_identity": {"severity": 5, "actionable_day68": true},
+    "severe_occlusion": {"severity": 4, "actionable_day68": true},
+    "central_row_occupancy": {"severity": 3, "actionable_day68": true},
+    "missing_left_boundary": {"severity": 3, "actionable_day68": true},
+    "missing_right_boundary": {"severity": 3, "actionable_day68": true},
+    "missing_both_boundaries": {"severity": 3, "actionable_day68": true},
+    "illumination_or_glare": {"severity": 3, "actionable_day68": true},
+    "motion_blur": {"severity": 3, "actionable_day68": true},
+    "prolonged_upstream_miss": {"severity": 3, "actionable_day68": true},
+    "state_machine_confirmation_only": {"severity": 1, "actionable_day68": false},
+    "no_failure_visible": {"severity": 0, "actionable_day68": false},
+    "ungradable": {"severity": 0, "actionable_day68": false}
+  },
+  "day68_decision": {
+    "minimum_reviewed_events": 5,
+    "minimum_episodes": 3,
+    "minimum_event_fraction": 0.10,
+    "ranking": "severity_then_episode_count_then_event_fraction",
+    "raw_frame_count_selects_priority": false
+  },
+  "evidence_status": "MODEL_ASSISTED_REVIEW_DEVELOPMENT_ONLY",
+  "real_video_safety_gate": "BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH"
+}

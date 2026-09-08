@@ -118,6 +118,16 @@ Day61–66；这不等于完整数据门通过，也不允许把管线工程结�
 - 6段冻结同源视频仍未访问；疑似草地/围栏valid留作Day67失败组，真实视频安全门继续为`BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`；
 - 本地结果：`D:/DL_code/data/crop_row_perception/day66_offline_video_pilot/`，视频、JSONL和审计图因许可未核验而不纳入Git；Day67下一步先建立可复核失败分组协议。
 
+## Day67 产物
+
+- `../../67_crop_row_failure_taxonomy/code/day67_failure_taxonomy.py`：严格读取Day66开发输出，生成连续事件、固定种子分层复核包、上下文媒体、标注聚合和Day68选择门；
+- `../../67_crop_row_failure_taxonomy/code/day67_taxonomy.json`：冻结系统触发器、视觉标签、证据级别和Day68跨episode门；
+- `../../67_crop_row_failure_taxonomy/tests/test_day67_failure_taxonomy.py`：覆盖冻结隔离、事件边界、导航合同、抽样、渲染、标注与决策；
+- 25段/10,995帧形成4,809个事件；第三版复核536个事件，包含全部296个valid事件以及按12层进行SRSWOR抽取的240个非valid事件；
+- 两轮全联系表和重点上下文复核发现9个疑似不安全valid事件/13帧/2个episode；草地/围栏valid共6事件/10帧但集中于单一episode，不能声称跨场景错误率；
+- 每个抽样事件记录层总体、样本量、真实纳入概率和设计权重；严重遮挡复核35个事件、覆盖14个episode，加权估计占可行动失败事件43.14%，成为Day68唯一目标；第一版未加权和第二版权重错配结论均不再用于决策；
+- 本地结果：`D:/DL_code/data/crop_row_perception/day67_failure_taxonomy/`；视觉标注为 `MODEL_ASSISTED_REVIEW_DEVELOPMENT_ONLY`，六段冻结同源视频未访问，真实视频安全仍为 `BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`。
+
 ## 修订后的 Day59～Day70 路线
 
 | Day | 学习任务 | 应有成果 |
@@ -130,8 +140,8 @@ Day61–66；这不等于完整数据门通过，也不允许把管线工程结�
 | 64 | 多行坐标与测量边界 | 用左右相邻行得到走廊中心、偏移、方向、行距和多线消失点，不伪造米制测量 |
 | 65 | 多行视频时序与安全状态 | 已完成：保持多行身份、平滑走廊、短遮挡恢复和显式拒绝；真实视频安全率因缺真值仍阻塞 |
 | 66 | 完整离线Pilot | 已完成：输出多行/ID、边界、valid专属中心、独立方向代理、置信度、四态和原因；真实视频安全仍阻塞 |
-| 67 | 失败案例分组 | 定量分类杂草、遮挡、缺行、中央作物行、地头、转弯、光照和时序切换失败 |
-| 68 | 一轮受控改进 | 只针对Day67最主要且可由现有开发证据解决的失败原因改进并重新过门 |
+| 67 | 失败案例分组 | 已完成：事件级系统触发器与视觉标签分离；全valid复核并将严重遮挡预注册为Day68目标 |
+| 68 | 一轮受控改进 | 只改严重遮挡下的可观测性/拒绝，保留非valid导航隔离并报告覆盖率代价 |
 | 69 | 冻结测试 | 冻结模型与阈值后一次访问CRDLD内部基准和RowDetr外部正样本；缺负样本则安全门保持BLOCKED |
 | 70 | 交付与导师汇报 | Demo、可复现代码、指标/失败报告、证据登记、限制和下一步采集/标定清单 |
 
