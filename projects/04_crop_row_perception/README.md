@@ -16,16 +16,16 @@ CRDLD 与 RowDetr 已完成下载和实测：CRDLD 可作受限 ID 开发候选�
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
 | 数据可行性 | SCOPED PASS / FULL BLOCKED | 2026-09-02 | 正样本学习可继续；许可、最高分组与拒识负样本仍阻断完整声明 |
 | 环境 | SCOPED PASS | 2026-09-02 | 受限同源正样本学习环境可执行；不解除完整数据门阻断 |
-| 管线试运行 | ENGINEERING PASS | 2026-09-07 | Day61–66管线、视频对齐、状态约束与运行时门通过 |
+| 管线试运行 | ENGINEERING PASS | 2026-09-08 | Day61–67管线、视频对齐、状态约束、运行时门与事件审计通过 |
 | 内部有效性 | SCOPED PASS / SAFETY BLOCKED | 2026-09-05 | 多行几何与测量门通过；unsafe false-valid及真实视频安全未通过 |
-| 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-07 | 开发视频Pilot完成；无逐帧真值，不声明真实视频准确率 |
+| 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-08 | 开发视频Pilot与事件级失败审计完成；无逐帧真值，不声明真实视频准确率 |
 | 冻结外部测试 | NOT_AVAILABLE | — | 后续执行 |
-| 交付 | DAY66 ENGINEERING DELIVERED / FINAL BLOCKED | 2026-09-07 | Day66代码已交付；完整项目交付留到Day70 |
+| 交付 | DAY67 ENGINEERING DELIVERED / FINAL BLOCKED | 2026-09-08 | Day67代码与加权复核已交付；完整项目交付留到Day70 |
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
 Day60 后用户明确将执行范围收窄为“同源正样本几何与工程开发”，因此允许沿受限路径完成
-Day61–66；这不等于完整数据门通过，也不允许把管线工程结果提升为真实视频安全、独立外部
+Day61–67；这不等于完整数据门通过，也不允许把管线工程结果提升为真实视频安全、独立外部
 泛化或实车部署证据。冻结外部测试仍需等参数、评价协议和证据边界全部锁定后再执行。
 
 ## Day59 产物
@@ -116,7 +116,7 @@ Day61–66；这不等于完整数据门通过，也不允许把管线工程结�
 - 第二版画面显示所有活跃作物行及稳定ID、明确的LEFT/RIGHT边界、valid专属绿色中心、独立黄色方向箭头/角度、置信度、四态和原因；
 - 9项工程检查与Day61–66联合138项测试全部通过；640x360 CPU结果为中位41.14 ms、P95 49.33 ms，计时不含解码/缩放和叠加编码；
 - 6段冻结同源视频仍未访问；疑似草地/围栏valid留作Day67失败组，真实视频安全门继续为`BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`；
-- 本地结果：`D:/DL_code/data/crop_row_perception/day66_offline_video_pilot/`，视频、JSONL和审计图因许可未核验而不纳入Git；Day67下一步先建立可复核失败分组协议。
+- 本地结果：`D:/DL_code/data/crop_row_perception/day66_offline_video_pilot/`，视频、JSONL和审计图因许可未核验而不纳入Git；可复核失败分组协议已在Day67完成。
 
 ## Day67 产物
 
