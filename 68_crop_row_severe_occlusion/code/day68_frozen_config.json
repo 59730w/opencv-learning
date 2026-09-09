@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "marker": "DAY68_FROZEN_CONFIG",
+  "selected_cause": "severe_occlusion",
+  "method": "causal_recovery_plus_corridor_observability_interlock_v2",
+  "min_preceding_nonvalid_frames": 8,
+  "max_min_boundary_support": 6,
+  "maximum_corridor_edge_fraction": 0.22,
+  "minimum_valid_retention": 0.9,
+  "evidence_status": "MODEL_ASSISTED_REVIEW_DEVELOPMENT_ONLY",
+  "selection_protocol": {
+    "unit": "ordered frame within complete development episode",
+    "change_from_day67": "one post-projection recovery interlock with causal corridor observability",
+    "threshold_scan": {
+      "preceding_nonvalid_frames": [1, 2, 3, 5, 8, 10, 20, 30],
+      "maximum_minimum_boundary_support": [4, 5, 6, 7, 8, 10],
+      "maximum_corridor_edge_fraction": [0.2, 0.22, 0.24]
+    },
+    "rejected_v1_development_result": {
+      "baseline_valid_frames": 490,
+      "guarded_first_reentry_frames": 39,
+      "valid_frame_retention": 0.9204081632653062,
+      "reviewed_suspected_unsafe_severe_valid_events_caught": 3,
+      "reviewed_suspected_unsafe_severe_valid_events_total": 3,
+      "appropriate_reviewed_valid_frames_suppressed": 36,
+      "rejection_reason": "passed the floor but over-suppressed visually appropriate recovery frames"
+    },
+    "corridor_edge_sensitivity": [
+      {"threshold": 0.2, "guarded_frames": 13, "valid_frame_retention": 0.9734693877551021, "target_events_caught": 3},
+      {"threshold": 0.22, "guarded_frames": 17, "valid_frame_retention": 0.9653061224489796, "target_events_caught": 3},
+      {"threshold": 0.24, "guarded_frames": 23, "valid_frame_retention": 0.9530612244897959, "target_events_caught": 3}
+    ],
+    "selected_candidate_development_result": {
+      "baseline_valid_frames": 490,
+      "guarded_first_reentry_frames": 17,
+      "expected_valid_frame_retention": 0.9653061224489796,
+      "reviewed_suspected_unsafe_severe_valid_events_caught": 3,
+      "reviewed_suspected_unsafe_severe_valid_events_total": 3,
+      "expected_appropriate_reviewed_valid_frames_suppressed": 14
+    },
+    "selection_order": [
+      "zero_nonvalid_navigation_leakage",
+      "block_all_reviewed_suspected_unsafe_severe_valid_events",
+      "retain_at_least_90_percent_of_baseline_valid_frames",
+      "prefer_the_simplest_causal_rule with margin from the target edge fractions"
+    ]
+  },
+  "frozen_inputs": {
+    "manifest_sha256": "d9c53dd601664f1131556f8e817b12c3d949e5af23de5a8ffb2c56cd8e76a037",
+    "day67_annotations_sha256": "f66474b502401a8052754c425c8ac763d31ca2d162889f27b97ce4b23a82df6f",
+    "day67_results_sha256": "d14d3c200ced37d12c580ceacc1354bd35b3cb5b57c55612e1e26ce53ecc31ef"
+  },
+  "upstream_day66_result_sha256": "21080952928dfb2352ca5f76afd36f4848af4f13c1374efafd09e49e9823077d",
+  "forbidden_roles": ["frozen_same_source_holdout"],
+  "real_video_safety_gate": "BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH"
+}

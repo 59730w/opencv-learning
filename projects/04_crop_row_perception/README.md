@@ -16,16 +16,16 @@ CRDLD 与 RowDetr 已完成下载和实测：CRDLD 可作受限 ID 开发候选�
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
 | 数据可行性 | SCOPED PASS / FULL BLOCKED | 2026-09-02 | 正样本学习可继续；许可、最高分组与拒识负样本仍阻断完整声明 |
 | 环境 | SCOPED PASS | 2026-09-02 | 受限同源正样本学习环境可执行；不解除完整数据门阻断 |
-| 管线试运行 | ENGINEERING PASS | 2026-09-08 | Day61–67管线、视频对齐、状态约束、运行时门与事件审计通过 |
+| 管线试运行 | ENGINEERING PASS | 2026-09-09 | Day61–68管线、视频对齐、状态约束、事件审计与受控遮挡守卫通过 |
 | 内部有效性 | SCOPED PASS / SAFETY BLOCKED | 2026-09-05 | 多行几何与测量门通过；unsafe false-valid及真实视频安全未通过 |
-| 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-08 | 开发视频Pilot与事件级失败审计完成；无逐帧真值，不声明真实视频准确率 |
+| 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-09 | 开发视频Pilot、失败审计与严重遮挡受控改进完成；无逐帧真值，不声明真实视频准确率 |
 | 冻结外部测试 | NOT_AVAILABLE | — | 后续执行 |
-| 交付 | DAY67 ENGINEERING DELIVERED / FINAL BLOCKED | 2026-09-08 | Day67代码与加权复核已交付；完整项目交付留到Day70 |
+| 交付 | DAY68 LOCAL COMPLETE / REVIEW PENDING / FINAL BLOCKED | 2026-09-09 | Day68代码、笔记与本地证据待用户检查；完整项目交付留到Day70 |
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
 Day60 后用户明确将执行范围收窄为“同源正样本几何与工程开发”，因此允许沿受限路径完成
-Day61–67；这不等于完整数据门通过，也不允许把管线工程结果提升为真实视频安全、独立外部
+Day61–68；这不等于完整数据门通过，也不允许把管线工程结果提升为真实视频安全、独立外部
 泛化或实车部署证据。冻结外部测试仍需等参数、评价协议和证据边界全部锁定后再执行。
 
 ## Day59 产物
@@ -128,6 +128,16 @@ Day61–67；这不等于完整数据门通过，也不允许把管线工程结�
 - 每个抽样事件记录层总体、样本量、真实纳入概率和设计权重；严重遮挡复核35个事件、覆盖14个episode，加权估计占可行动失败事件43.14%，成为Day68唯一目标；第一版未加权和第二版权重错配结论均不再用于决策；
 - 本地结果：`D:/DL_code/data/crop_row_perception/day67_failure_taxonomy/`；视觉标注为 `MODEL_ASSISTED_REVIEW_DEVELOPMENT_ONLY`，六段冻结同源视频未访问，真实视频安全仍为 `BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`。
 
+## Day68 产物
+
+- `../../68_crop_row_severe_occlusion/code/day68_severe_occlusion.py`：因果恢复候选、走廊边缘可观测性/边界越界守卫、valid专属导航清空、全量运行和叠加；
+- `../../68_crop_row_severe_occlusion/code/day68_frozen_config.json`：冻结阈值、输入哈希、第一版失败记录与第二版敏感性；
+- `../../68_crop_row_severe_occlusion/tests/test_day68_severe_occlusion.py`：12项状态合同、可观测性、冻结隔离与逐帧视频对齐测试；
+- 第一版拦截3/3目标但误拦36个已复核正常帧，第二版将正常误拦降到14帧，同时保留473/490=96.53%的Day66 valid帧；
+- 最终在25段开发视频/10,995帧上把3个已复核严重遮挡疑似不安全valid事件降为0，非valid导航泄漏为0；
+- 25个帧对齐JSONL和25个叠加MP4均在本地生成并完整解码核对，Day61～68联合175项测试通过；
+- 本地结果：`D:/DL_code/data/crop_row_perception/day68_severe_occlusion/`；六段冻结同源视频零访问，模型辅助复核不是真值，真实视频安全仍为 `BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`。
+
 ## 修订后的 Day59～Day70 路线
 
 | Day | 学习任务 | 应有成果 |
@@ -141,7 +151,7 @@ Day61–67；这不等于完整数据门通过，也不允许把管线工程结�
 | 65 | 多行视频时序与安全状态 | 已完成：保持多行身份、平滑走廊、短遮挡恢复和显式拒绝；真实视频安全率因缺真值仍阻塞 |
 | 66 | 完整离线Pilot | 已完成：输出多行/ID、边界、valid专属中心、独立方向代理、置信度、四态和原因；真实视频安全仍阻塞 |
 | 67 | 失败案例分组 | 已完成：事件级系统触发器与视觉标签分离；全valid复核并将严重遮挡预注册为Day68目标 |
-| 68 | 一轮受控改进 | 只改严重遮挡下的可观测性/拒绝，保留非valid导航隔离并报告覆盖率代价 |
+| 68 | 一轮受控改进 | 已完成：只改严重遮挡下的可观测性/拒绝，拦截3/3开发期目标并保留96.53% valid，非valid导航泄漏为0 |
 | 69 | 冻结测试 | 冻结模型与阈值后一次访问CRDLD内部基准和RowDetr外部正样本；缺负样本则安全门保持BLOCKED |
 | 70 | 交付与导师汇报 | Demo、可复现代码、指标/失败报告、证据登记、限制和下一步采集/标定清单 |
 
