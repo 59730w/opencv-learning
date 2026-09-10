@@ -141,6 +141,8 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 ## Day69 产物
 
 - `../../69_crop_row_frozen_evaluation/code/run_crop_row_pilot.py`：用户可运行的单视频/目录CLI，输出2倍分辨率叠加MP4、逐帧JSONL、CSV和汇总报告；
+- `../../69_crop_row_frozen_evaluation/启动禾迹视觉台.bat`：Windows双击入口，自动打开只监听本机的“禾迹”视频上传与结果预览网页；
+- `../../69_crop_row_frozen_evaluation/code/day69_web_ui.py`：复用冻结CLI的Gradio界面，提供设备选择、隔离输出、进度、叠加视频预览与五类结果下载；
 - `../../69_crop_row_frozen_evaluation/code/day69_frozen_evaluation.py`：冻结协议校验、RowDetr折线转换、静态几何汇总和Day63→65→66→68完整视频组合；
 - `../../69_crop_row_frozen_evaluation/code/day69_frozen_protocol.json`：第一次读取冻结媒体前锁定的12项代码/模型/清单哈希、指标和反调参规则；
 - `../../69_crop_row_frozen_evaluation/code/day69_frozen_result_summary.json`：不包含原始数据的精简冻结结果；
@@ -149,6 +151,7 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 - `../../69_crop_row_frozen_evaluation/code/day69_v2_frozen_protocol.json`：第二版读取SSR expansion_2前锁定的评价、阈值、门槛、哈希与反调参规则；
 - `../../69_crop_row_frozen_evaluation/code/day69_v2_result_summary.json`：第二版外部结果、失败门和不可声明范围；
 - `../../69_crop_row_frozen_evaluation/assets/day69_v2_ssr_external_audit.jpg`：12个miss与8个高方向误差match的视觉复核；
+- `../../69_crop_row_frozen_evaluation/assets/heji_web_ui.png`：“禾迹”本地视觉台实际浏览器渲染截图；
 - `../../69_crop_row_frozen_evaluation/code/day69_notes.md`：方法、结果、负证据和程序使用说明；
 - `../../69_crop_row_frozen_evaluation/tests/test_day69_frozen_evaluation.py`：协议漂移、角色隔离、折线语义、正样本安全边界、静态哈希和端到端输出测试；
 - 6段同源冻结视频共896帧，输出18 valid、12 candidate、841 degraded、25 reject，所有源哈希和叠加视频完整性通过，导航契约违规为0；
@@ -158,6 +161,7 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 - SSR 98/98标签可评价、70张匹配，中央行Recall 0.7143未达0.80；已匹配位置MAE 0.0234和方向MAE 4.374°通过。该有效负结果不允许事后调参重跑；
 - 本地完整结果位于`D:/DL_code/data/crop_row_perception/day69_frozen_evaluation/`，许可未核验的原始视频、图像和衍生产物不进入Git；
 - 第二版SSR完整结果位于`D:/DL_code/data/crop_row_perception/day69_v2_ssr_external/`；可运行程序已经完成，但完整多行外部泛化、负样本拒识和真实视频安全均未建立。
+- 网页在真实89帧开发视频上完成浏览器上传与按钮端到端检查，得到39 valid、1 candidate、49 degraded、0 reject，导航契约违规为0；网页是本地诊断包装，不改变冻结成绩或安全边界。
 
 ## 修订后的 Day59～Day70 路线
 

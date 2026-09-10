@@ -58,6 +58,9 @@
   },
   "delivery": {
     "runnable_offline_pilot": true,
+    "local_web_ui": true,
+    "local_web_ui_brand": "禾迹",
+    "local_web_ui_launcher": "69_crop_row_frozen_evaluation/启动禾迹视觉台.bat",
     "external_central_row_geometry": "VALID_RESULT_RECALL_GATE_FAILED",
     "all_row_external_generalization": "NOT_ESTABLISHED_PARTIAL_LABELS",
     "reject_aware_external_generalization": "BLOCKED_NO_TARGET_DOMAIN_NEGATIVE_TEST",
