@@ -225,7 +225,12 @@ def build_app() -> gr.Blocks:
         neutral_hue=gr.themes.colors.stone,
         radius_size=gr.themes.sizes.radius_lg,
     )
-    with gr.Blocks(theme=theme, css=CSS, title="禾迹 · 作物行视觉台") as app:
+    with gr.Blocks(
+        theme=theme,
+        css=CSS,
+        title="禾迹 · 作物行视觉台",
+        analytics_enabled=False,
+    ) as app:
         gr.HTML(
             """
             <section class="heji-hero">

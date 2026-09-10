@@ -115,6 +115,7 @@ class Day69WebUiTests(unittest.TestCase):
     def test_public_interface_uses_product_identity_without_course_day_text(self):
         module = self._module()
         config = module.build_app().get_config_file()
+        self.assertFalse(config.get("analytics_enabled"))
         visible_strings = [str(config.get("title", ""))]
         for component in config.get("components", []):
             props = component.get("props", {})
@@ -125,6 +126,14 @@ class Day69WebUiTests(unittest.TestCase):
         self.assertIn("禾迹", visible_text)
         self.assertNotIn("Day69", visible_text)
         self.assertNotIn("DAY 69", visible_text)
+
+    def test_windows_launcher_is_ascii_safe_for_cmd_parser(self):
+        launcher = Path(__file__).resolve().parents[1] / "启动禾迹视觉台.bat"
+        self.assertTrue(
+            launcher.read_bytes().isascii(),
+            "Windows batch launcher content must remain ASCII-safe; "
+            "the Chinese filename and web interface may still use Chinese.",
+        )
 
 
 if __name__ == "__main__":
