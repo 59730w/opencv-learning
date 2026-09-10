@@ -1,0 +1,66 @@
+{
+  "marker": "DAY69_V2_PREACCESS_FROZEN",
+  "frozen_at_local_date": "2026-09-10",
+  "purpose": "Repair the v1 reference-support failure without changing Day61-Day68 inference, then run a one-time external central-row geometry test.",
+  "expected_counts": {
+    "ssr_expansion2_image_label_pairs": 98
+  },
+  "frozen_artifacts": {
+    "day69_v2_evaluator": {
+      "path": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\code\\day69_v2_evaluation.py",
+      "sha256": "2d4a4989acdca8944612a3925e591f49bdf692d886351b40ff1f8ea213707fce"
+    },
+    "day69_v2_ssr_source_split": {
+      "path": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\code\\day69_v2_ssr_source_split.json",
+      "sha256": "59e2e3c3d177d470cc61767d177891e50898ed7cce1b6642dfee981a9a941e51"
+    },
+    "day69_v1_frozen_protocol": {
+      "path": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\code\\day69_frozen_protocol.json",
+      "sha256": "c90f310fb38fbfc972880e94ec307118a93f4846a56e7a1d1cb8965dc78da005"
+    }
+  },
+  "inference": {
+    "inherit_all_artifact_hashes_and_execution_settings_from_day69_v1_protocol": true,
+    "model_or_preprocessing_changes": 0,
+    "device": "cpu",
+    "batch_size": 8
+  },
+  "reference_conversion": {
+    "format": "normalized YOLO segmentation polygon",
+    "method": "analytic horizontal scanline intersections and outer-boundary midpoint",
+    "model_y_domain": [0.4, 0.9],
+    "scanline_samples": 33,
+    "minimum_visible_overlap_y_norm": 0.2,
+    "rasterization": false
+  },
+  "matching": {
+    "method": "monotonic dynamic programming",
+    "objective_order": ["maximize_matched_count", "minimize_mean_visible_x_error"],
+    "maximum_mean_visible_x_error_norm": 0.06
+  },
+  "supported_gates": {
+    "central_row_detection_recall": {"operator": ">=", "threshold": 0.8},
+    "matched_visible_position_mae_norm": {"operator": "<=", "threshold": 0.05},
+    "matched_heading_mae_deg": {"operator": "<=", "threshold": 5.0}
+  },
+  "unsupported_metrics": [
+    "all_row_detection_precision",
+    "all_row_detection_recall",
+    "corridor_boundary_pair_accuracy",
+    "corridor_center_mae_norm",
+    "unsafe_false_valid_rate",
+    "reject_precision",
+    "reject_recall",
+    "comparable_640x360_runtime_gate"
+  ],
+  "preaccess_checks": {
+    "day69_v2_tests": "19 passed",
+    "real_development_sample_central_row_match": true,
+    "real_development_sample_position_error_norm": 0.012301935495984628,
+    "real_development_sample_heading_error_deg": 4.57206560999197,
+    "ssr_expansion2_media_decoded": 0,
+    "ssr_expansion2_label_content_read": 0
+  },
+  "anti_tuning_rule": "After the first SSR expansion_2 image or label byte is downloaded, no Day61-Day68 inference setting, reference conversion, matching rule, threshold, gate, or metric definition may change in response to results.",
+  "failure_policy": "Preserve failed gates. If the frozen source has no evaluable reference, report INVALID_REFERENCE_SUPPORT with null metrics. Do not create pseudo-ground-truth or reuse accessed RowDetr as independent confirmation."
+}

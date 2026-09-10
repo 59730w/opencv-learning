@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "marker": "DAY69_PREACCESS_FROZEN",
+  "frozen_on": "2026-09-10",
+  "objective": "Evaluate the accepted Day63-Day68 crop-row pipeline once on untouched evidence and package a runnable offline video pilot.",
+  "anti_tuning_rule": "After the first frozen media decode, do not change the model, preprocessing, thresholds, confidence rules, metric definitions, or label conversion rules based on test results.",
+  "failure_policy": "Preserve negative results, narrow claims, and defer any new model cycle to new development data.",
+  "expected_counts": {
+    "crow_videos": 6,
+    "crdld_images": 429,
+    "rowdetr_images": 1760,
+    "target_domain_negative_images": 0
+  },
+  "execution": {
+    "video_device": "cpu",
+    "static_device": "cpu",
+    "static_batch_size": 1,
+    "timing_boundary": "Frozen preprocessing plus prediction on CPU; video timing is summarized separately from rendering."
+  },
+  "development_comparator": {
+    "row_detection_precision": 0.954404,
+    "row_detection_recall": 0.929766,
+    "matched_bottom_position_mae_norm": 0.010402,
+    "matched_heading_mae_deg": 1.8711,
+    "corridor_boundary_pair_accuracy": 0.91604,
+    "corridor_center_mae_norm": 0.014608
+  },
+  "evidence_contract": {
+    "crow": "Same-source frozen video engineering/stability evidence; no framewise corridor-validity truth.",
+    "crdld": "Same-source internal positive geometry benchmark; no highest-level group key and no reject truth.",
+    "rowdetr": "Independent-source frozen positive geometry test; no negatives and no sequence groups.",
+    "target_domain_negatives": "BLOCKED_NOT_AVAILABLE",
+    "real_video_safety": "BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH"
+  },
+  "paths": {
+    "checkpoint": "D:\\DL_code\\data\\crop_row_perception\\day63_crop_row_geometry\\day63_resnet18_centerline_model.pt",
+    "day65_result": "D:\\DL_code\\data\\crop_row_perception\\day65_video_temporal_verified\\day65_results.json",
+    "day66_config": "D:\\opencv-learning\\66_crop_row_offline_video_pilot\\code\\day66_frozen_config.json",
+    "day68_config": "D:\\opencv-learning\\68_crop_row_severe_occlusion\\code\\day68_frozen_config.json",
+    "crow_manifest": "D:\\DL_code\\data\\crop_row_perception\\sources\\lecrop_data\\crow_video_manifest.json",
+    "crdld_manifest": "D:\\opencv-learning\\projects\\04_crop_row_perception\\data\\scoped_crdld\\crdld_same_source_internal_benchmark_manifest.jsonl",
+    "crdld_root": "D:\\DL_code\\data\\crop_row_perception\\sources\\crdld_v2_1\\data",
+    "rowdetr_manifest": "D:\\opencv-learning\\projects\\04_crop_row_perception\\data\\frozen_external_sorghum_manifest.json",
+    "rowdetr_root": "D:\\DL_code\\data\\crop_row_perception\\sources\\rowdetr_kaggle_8432059\\staging\\crop-row-detection"
+  },
+  "frozen_artifacts": {
+    "day69_evaluator": {"path": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\code\\day69_frozen_evaluation.py", "sha256": "81ed5d2ea0a59bf02f4516a2f71e61f20de8eb54d11d74a6c63c5407f5311502"},
+    "day69_one_time_runner": {"path": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\code\\run_day69_frozen_once.py", "sha256": "92e3129bc5e74d194585f6feca7216cc1488577c5eb9218aa1d0f88df5d4fd86"},
+    "day69_user_runner": {"path": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\code\\run_crop_row_pilot.py", "sha256": "0dd9177d09b4affc4a28eba99d9ede35c6daa3571107229adf894acb10a94938"},
+    "day69_visual_audit": {"path": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\code\\build_day69_visual_audit.py", "sha256": "08acf4c6e15c4e2ad1cfc52539547edeb144b25526f87d4f278a77811c218811"},
+    "day66_config": {"path": "D:\\opencv-learning\\66_crop_row_offline_video_pilot\\code\\day66_frozen_config.json", "sha256": "ba92053e264da2fea2ad4f3b5dfc14d14562d63d8cabd44e6a4a3bf8f1a5459b"},
+    "day68_config": {"path": "D:\\opencv-learning\\68_crop_row_severe_occlusion\\code\\day68_frozen_config.json", "sha256": "5c4d93bc6c6a9cada0a7dd2a97e33c5620ae478d895f0051021dc388036af0c2"},
+    "day65_result": {"path": "D:\\DL_code\\data\\crop_row_perception\\day65_video_temporal_verified\\day65_results.json", "sha256": "bb921d1035206d4dcd6f3da9296bb83d8ab8fbdc83478a4bf6a2ef8bb9928ea7"},
+    "crow_manifest": {"path": "D:\\DL_code\\data\\crop_row_perception\\sources\\lecrop_data\\crow_video_manifest.json", "sha256": "d9c53dd601664f1131556f8e817b12c3d949e5af23de5a8ffb2c56cd8e76a037"},
+    "crdld_manifest": {"path": "D:\\opencv-learning\\projects\\04_crop_row_perception\\data\\scoped_crdld\\crdld_same_source_internal_benchmark_manifest.jsonl", "sha256": "e0280a43205f15c00fc90653178e31da70f4977c6846ef09e5b5f0a73c8c9609"},
+    "rowdetr_manifest": {"path": "D:\\opencv-learning\\projects\\04_crop_row_perception\\data\\frozen_external_sorghum_manifest.json", "sha256": "4c66a83fef3759abff094c25710ae088f4946d06f113990821412d7b1e496a50"},
+    "checkpoint": {"path": "D:\\DL_code\\data\\crop_row_perception\\day63_crop_row_geometry\\day63_resnet18_centerline_model.pt", "sha256": "b6ce2b6335bccc8e15447d148f6453e3f1e6463625ae6d11529499ef07e337cc"},
+    "target_contract": {"path": "D:\\opencv-learning\\projects\\04_crop_row_perception\\target_contract.yaml", "sha256": "d00a24df638ad52c2d44d013b47aba1db78d84307c4cc736eba3769562799a8e"}
+  }
+}

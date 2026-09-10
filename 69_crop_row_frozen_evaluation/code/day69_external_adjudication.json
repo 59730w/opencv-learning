@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "marker": "DAY69_POST_ACCESS_ADJUDICATION",
+  "created_on": "2026-09-10",
+  "frozen_result_sha256": "dab64cc749a966f63597efa71346c82ddcf6653b183bf2f30e8b069f003739d8",
+  "issue": "The preregistered RowDetr conversion required each polyline to span normalized y=0.40 and y=0.90.",
+  "diagnostic_counts": {
+    "images": 1760,
+    "annotated_polylines": 3929,
+    "polylines_spanning_y_0_40": 0,
+    "polylines_spanning_y_0_90": 3041,
+    "polylines_spanning_both": 0,
+    "evaluable_reference_rows_in_frozen_output": 0,
+    "predicted_rows_in_frozen_output": 3523
+  },
+  "adjudication": "INVALID_REFERENCE_TRANSFORMATION_NO_EVALUABLE_ROWS",
+  "metric_interpretation": "The emitted 0 precision/recall values are not model-performance estimates and must not be reported as external accuracy.",
+  "external_positive_geometry_claim": "BLOCKED_INVALID_PREREGISTERED_REFERENCE_TRANSFORMATION",
+  "reject_aware_external_claim": "BLOCKED_NO_TARGET_DOMAIN_NEGATIVE_TEST",
+  "remediation_boundary": "Do not redefine the conversion or rerun this frozen source during Day69. A future cycle needs a new preregistered metric compatible with partial polylines and genuinely untouched external evidence.",
+  "anti_tuning_compliance": "No Day61-Day68 model, preprocessing, threshold, confidence, or navigation rule was changed after frozen access."
+}

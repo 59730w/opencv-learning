@@ -1,0 +1,57 @@
+{
+  "marker": "DAY69_V2_SOURCE_SPLIT_FROZEN_BEFORE_ANNOTATION_ACCESS",
+  "frozen_at_local_date": "2026-09-10",
+  "source": {
+    "name": "CRIS-Cotton",
+    "record_url": "https://data.mendeley.com/datasets/65r22tgnwt/1",
+    "doi": "10.17632/65r22tgnwt.1",
+    "license": "CC BY 4.0",
+    "archive_name": "CSV.zip",
+    "archive_size_bytes": 3110292206,
+    "archive_sha256": "b49ec038d714a19d561547cae495cbd65803cf56671afafdbd9ea376a4dbc56b"
+  },
+  "preaccess_observation": {
+    "media_decoded": 0,
+    "annotation_rows_read": 0,
+    "zip_central_directory_only": true,
+    "jpg_entry_count": 26190,
+    "source_group_count": 115,
+    "groups_crossing_official_splits": 106,
+    "official_split_accepted_as_independent": false
+  },
+  "group_key_rule": "strip directory and .rf.<hex>.jpg, then strip _mp4-<digits>_jpg; otherwise use the remaining basename",
+  "selection": {
+    "seed": "day69-v2-cris-cotton-group-freeze-v1",
+    "minimum_group_images": 20,
+    "eligible_group_count": 93,
+    "reserved_group_fraction": 0.2,
+    "reserved_group_count": 19,
+    "maximum_images_per_group": 10,
+    "reserved_sample_count": 190,
+    "group_rank": "ascending sha256(seed + ':' + group_key), then group_key",
+    "image_rank": "ascending sha256(seed + ':entry:' + archive_entry_name), then archive_entry_name"
+  },
+  "reserved_groups": [
+    "04",
+    "IMG_0707_MOV",
+    "fzy0623",
+    "IMG_4779_MOV",
+    "d38451a2b641b0b2d4c19ebab59eb801",
+    "VID_20240630_170754",
+    "-07093",
+    "7b1e6151f5ad1f5dadacd1d3e43011a1",
+    "VID_20240605_173019",
+    "VID_20240630_170239",
+    "Img-3811",
+    "1824798fdb10da9ccaf6c738cf635d4c",
+    "Img-3804",
+    "VXTM9711",
+    "-",
+    "WeChat_20240518143355",
+    "IMG_3862_MOV",
+    "VID_20240630_165807",
+    "Img-3805"
+  ],
+  "anti_leakage_rule": "Before the final access marker, reserved image bytes must not be downloaded or decoded and reserved annotation rows must not be parsed into geometry or displayed. Development inspection may use only non-reserved groups.",
+  "claim_boundary": "If admitted, this is an independent-source, group-disjoint positive-geometry test. It contains no verified target-domain negatives and cannot validate reject safety."
+}

@@ -7,7 +7,7 @@
 置信度和拒绝状态。作物行本身不是可通行中心；项目不包含真实机器人控制，也不把图像坐标
 误写成物理距离或真实机器人车体边界。
 
-CRDLD 与 RowDetr 已完成下载和实测：CRDLD 可作受限 ID 开发候选，RowDetr 高粱子源中 1,760 张干净图像已冻结为外部正样本。由于 CRDLD 许可/最高分组仍未知，且前视目标域拒识负样本尚缺，完整数据门禁仍为 `BLOCKED`。
+CRDLD、RowDetr 与 SSR 已完成受控实测：CRDLD 只作受限同源开发/内部证据；RowDetr 第一版因标签支持域失配而 INVALID，第二版只作协议开发；SSR v7 `expansion_2` 的 98 张后续现场图像给出了有效外部中央行结果，但 Recall 0.7143 未达 0.80。由于 CRDLD 许可/最高分组仍未知，且前视目标域拒识负样本尚缺，完整数据门禁仍为 `BLOCKED`。
 
 ## 门禁状态
 
@@ -16,11 +16,11 @@ CRDLD 与 RowDetr 已完成下载和实测：CRDLD 可作受限 ID 开发候选�
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
 | 数据可行性 | SCOPED PASS / FULL BLOCKED | 2026-09-02 | 正样本学习可继续；许可、最高分组与拒识负样本仍阻断完整声明 |
 | 环境 | SCOPED PASS | 2026-09-02 | 受限同源正样本学习环境可执行；不解除完整数据门阻断 |
-| 管线试运行 | ENGINEERING PASS | 2026-09-09 | Day61–68管线、视频对齐、状态约束、事件审计与受控遮挡守卫通过 |
+| 管线试运行 | ENGINEERING PASS | 2026-09-10 | Day61–69管线、可运行CLI、视频对齐、状态约束、事件审计与受控遮挡守卫通过 |
 | 内部有效性 | SCOPED PASS / SAFETY BLOCKED | 2026-09-05 | 多行几何与测量门通过；unsafe false-valid及真实视频安全未通过 |
 | 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-09 | 开发视频Pilot、失败审计与严重遮挡受控改进完成；无逐帧真值，不声明真实视频准确率 |
-| 冻结外部测试 | NOT_AVAILABLE | — | 后续执行 |
-| 交付 | DAY68 LOCAL COMPLETE / REVIEW PENDING / FINAL BLOCKED | 2026-09-09 | Day68代码、笔记与本地证据待用户检查；完整项目交付留到Day70 |
+| 冻结外部测试 | VALID RESULT / RECALL GATE FAILED | 2026-09-10 | SSR expansion_2 98/98参考有效，中央行Recall 0.7143未达0.80；匹配位置MAE 0.0234、方向MAE 4.374°通过 |
+| 交付 | DAY69 V2 LOCAL COMPLETE / REVIEW PENDING / FINAL BLOCKED | 2026-09-10 | 离线CLI、同源冻结评估与有效外部检验完成；完整多行泛化、拒识安全和真实视频安全仍阻塞 |
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
@@ -138,6 +138,27 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 - 25个帧对齐JSONL和25个叠加MP4均在本地生成并完整解码核对，Day61～68联合175项测试通过；
 - 本地结果：`D:/DL_code/data/crop_row_perception/day68_severe_occlusion/`；六段冻结同源视频零访问，模型辅助复核不是真值，真实视频安全仍为 `BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH`。
 
+## Day69 产物
+
+- `../../69_crop_row_frozen_evaluation/code/run_crop_row_pilot.py`：用户可运行的单视频/目录CLI，输出2倍分辨率叠加MP4、逐帧JSONL、CSV和汇总报告；
+- `../../69_crop_row_frozen_evaluation/code/day69_frozen_evaluation.py`：冻结协议校验、RowDetr折线转换、静态几何汇总和Day63→65→66→68完整视频组合；
+- `../../69_crop_row_frozen_evaluation/code/day69_frozen_protocol.json`：第一次读取冻结媒体前锁定的12项代码/模型/清单哈希、指标和反调参规则；
+- `../../69_crop_row_frozen_evaluation/code/day69_frozen_result_summary.json`：不包含原始数据的精简冻结结果；
+- `../../69_crop_row_frozen_evaluation/code/day69_external_adjudication.json`：RowDetr参考转换无可评估行的访问后裁决；
+- `../../69_crop_row_frozen_evaluation/code/day69_v2_evaluation.py`：局部折线/YOLO多边形解析、最大匹配数优先的单调动态规划、零分母fail-closed汇总和SSR静态评估；
+- `../../69_crop_row_frozen_evaluation/code/day69_v2_frozen_protocol.json`：第二版读取SSR expansion_2前锁定的评价、阈值、门槛、哈希与反调参规则；
+- `../../69_crop_row_frozen_evaluation/code/day69_v2_result_summary.json`：第二版外部结果、失败门和不可声明范围；
+- `../../69_crop_row_frozen_evaluation/assets/day69_v2_ssr_external_audit.jpg`：12个miss与8个高方向误差match的视觉复核；
+- `../../69_crop_row_frozen_evaluation/code/day69_notes.md`：方法、结果、负证据和程序使用说明；
+- `../../69_crop_row_frozen_evaluation/tests/test_day69_frozen_evaluation.py`：协议漂移、角色隔离、折线语义、正样本安全边界、静态哈希和端到端输出测试；
+- 6段同源冻结视频共896帧，输出18 valid、12 candidate、841 degraded、25 reject，所有源哈希和叠加视频完整性通过，导航契约违规为0；
+- CRDLD同源内部429张的Precision/Recall为0.9658/0.9702，绝对几何门通过，但边界配对相对开发下降0.1056，略超预注册0.10上限；
+- RowDetr 1,760张/3,929条折线中0条跨越预注册`y=0.40`，因此原始0值不可解释为准确率，外部正样本评估裁决为`INVALID_REFERENCE_TRANSFORMATION_NO_EVALUABLE_ROWS`；
+- 第二版在RowDetr开发证据上证明局部可见指标可评价3,322条折线；随后拒绝边界框标签的CRIS-Cotton，改用从未触碰的SSR v7 expansion_2；
+- SSR 98/98标签可评价、70张匹配，中央行Recall 0.7143未达0.80；已匹配位置MAE 0.0234和方向MAE 4.374°通过。该有效负结果不允许事后调参重跑；
+- 本地完整结果位于`D:/DL_code/data/crop_row_perception/day69_frozen_evaluation/`，许可未核验的原始视频、图像和衍生产物不进入Git；
+- 第二版SSR完整结果位于`D:/DL_code/data/crop_row_perception/day69_v2_ssr_external/`；可运行程序已经完成，但完整多行外部泛化、负样本拒识和真实视频安全均未建立。
+
 ## 修订后的 Day59～Day70 路线
 
 | Day | 学习任务 | 应有成果 |
@@ -152,7 +173,7 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 | 66 | 完整离线Pilot | 已完成：输出多行/ID、边界、valid专属中心、独立方向代理、置信度、四态和原因；真实视频安全仍阻塞 |
 | 67 | 失败案例分组 | 已完成：事件级系统触发器与视觉标签分离；全valid复核并将严重遮挡预注册为Day68目标 |
 | 68 | 一轮受控改进 | 已完成：只改严重遮挡下的可观测性/拒绝，拦截3/3开发期目标并保留96.53% valid，非valid导航泄漏为0 |
-| 69 | 冻结测试 | 冻结模型与阈值后一次访问CRDLD内部基准和RowDetr外部正样本；缺负样本则安全门保持BLOCKED |
+| 69 | 冻结测试 | 第二版已完成：修复RowDetr暴露的零参考评价缺陷；SSR 98张有效外部中央行评估中位置/方向门通过、Recall 0.7143未达0.80；安全门保持BLOCKED |
 | 70 | 交付与导师汇报 | Demo、可复现代码、指标/失败报告、证据登记、限制和下一步采集/标定清单 |
 
 Day70的目标是“证据清楚的离线农业机器人视觉Pilot”，不是已经能安全控制真实机器人。

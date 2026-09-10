@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "marker": "DAY69_RESULT_SUMMARY",
+  "date": "2026-09-10",
+  "protocol_sha256": "c90f310fb38fbfc972880e94ec307118a93f4846a56e7a1d1cb8965dc78da005",
+  "frozen_result_sha256": "dab64cc749a966f63597efa71346c82ddcf6653b183bf2f30e8b069f003739d8",
+  "crow_frozen_video": {
+    "episodes": 6,
+    "frames": 896,
+    "states": {"valid": 18, "candidate": 12, "degraded": 841, "reject": 25},
+    "cpu_predictor_median_ms_per_frame": 26.959302185792342,
+    "all_sources_hash_verified": true,
+    "all_overlays_fully_decoded": true,
+    "navigation_contract_violations": 0,
+    "accuracy_and_safety": "UNAVAILABLE_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH"
+  },
+  "crdld_same_source_internal": {
+    "images": 429,
+    "row_precision": 0.9657814096016343,
+    "row_recall": 0.9702411493073371,
+    "matched_position_mae_norm": 0.010579022498852097,
+    "matched_heading_mae_deg": 1.734649952041433,
+    "corridor_boundary_pair_accuracy": 0.8104265402843602,
+    "corridor_center_mae_norm": 0.013472012934043497,
+    "supported_valid_recall": 0.8104265402843602,
+    "absolute_gates_passed": true,
+    "development_gap_gates_passed": false,
+    "failed_gap": "corridor boundary-pair adverse gap 0.105613 exceeded frozen limit 0.10",
+    "claim": "SAME_SOURCE_INTERNAL_POSITIVE_GEOMETRY_ONLY"
+  },
+  "rowdetr_external_positive": {
+    "images": 1760,
+    "annotated_polylines": 3929,
+    "evaluable_reference_rows": 0,
+    "adjudication": "INVALID_REFERENCE_TRANSFORMATION_NO_EVALUABLE_ROWS",
+    "claim": "BLOCKED_INVALID_PREREGISTERED_REFERENCE_TRANSFORMATION"
+  },
+  "delivery": {
+    "runnable_offline_pilot": true,
+    "external_generalization": "NOT_ESTABLISHED",
+    "reject_aware_external_generalization": "BLOCKED_NO_TARGET_DOMAIN_NEGATIVE_TEST",
+    "real_video_safety": "BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH",
+    "github_upload": "PENDING_USER_REVIEW"
+  }
+}

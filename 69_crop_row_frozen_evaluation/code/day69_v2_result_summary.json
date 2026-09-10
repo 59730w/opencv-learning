@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "marker": "DAY69_V2_RESULT_SUMMARY",
+  "date": "2026-09-10",
+  "v1_preserved": true,
+  "v2_protocol_sha256": "8d98fd3bc8d1992d4cd841c03199529bb07e3af662b4b91c8838692ab0090234",
+  "ssr_manifest_sha256": "4f71f39576c9ac2f4f5695a02197ef2882ac478f49a18e2bd980408cd4c05eee",
+  "ssr_records_sha256": "cb37c83be298c020d13504f37771cfc2322587fac402a7cb53c1202d705ad016",
+  "v2_changes": {
+    "partial_polyline_metric": "analytic visible-overlap centerline comparison",
+    "matching": "monotonic dynamic programming maximizing pair count before minimizing error",
+    "zero_reference_behavior": "INVALID_REFERENCE_SUPPORT with null model metrics",
+    "day61_to_day68_inference_changes": 0
+  },
+  "rowdetr_protocol_development": {
+    "role": "ACCESSED_PROTOCOL_DEVELOPMENT_ONLY_NOT_EXTERNAL_CONFIRMATION",
+    "images": 1760,
+    "minimum_visible_overlap_y_norm": 0.2,
+    "images_with_evaluable_reference": 1707,
+    "evaluable_reference_polylines": 3322,
+    "rejected_reference_polylines": 607
+  },
+  "candidate_adjudications": {
+    "cris_cotton": "REJECT_LABEL_TASK_MISMATCH_BOUNDING_BOXES_NOT_ROW_GEOMETRY",
+    "ssr_expansion2": "ACCEPT_CENTRAL_ROW_POSITIVE_GEOMETRY_ONLY"
+  },
+  "ssr_expansion2_frozen_external": {
+    "source": "SeedlingStemRow version 7, expansion_2, Fusui 2026-01",
+    "license": "MIT",
+    "images": 98,
+    "hash_verified_pairs": 98,
+    "evaluable_references": 98,
+    "rejected_reference_polygons": 0,
+    "matched_references": 70,
+    "central_row_detection_recall": 0.7142857142857143,
+    "matched_visible_position_mae_norm": 0.023427600087332908,
+    "matched_heading_mae_deg": 4.37373498152316,
+    "gates": {
+      "central_row_detection_recall_at_least_0_80": false,
+      "matched_visible_position_mae_at_most_0_05": true,
+      "matched_heading_mae_at_most_5_deg": true
+    },
+    "all_supported_gates_passed": false,
+    "formal_verdict": "VALID_EXTERNAL_RESULT_WITH_RECALL_GATE_FAILURE",
+    "runtime_gate": "UNAVAILABLE_MIXED_RESOLUTION_AND_WARMUP"
+  },
+  "visual_audit": {
+    "asset_sha256": "e34ef7116bde0516a05d44ef3f102f68a8fd957c62ca0f524bb1a0d44453e724",
+    "selected_images": 20,
+    "rerun_match_status_agreement": "20/20",
+    "observation": "Strong shadow, residue and sparse seedlings often leave adjacent structures detected while the annotated middle row is missed."
+  },
+  "post_access_exploration": {
+    "claim_role": "EXPLORATORY_ONLY_NOT_FROZEN_EVIDENCE",
+    "corridor_center_available": 34,
+    "corridor_center_matches": 7,
+    "conclusion": "Changing the target to predicted corridor center does not explain away the frozen miss rate."
+  },
+  "delivery": {
+    "runnable_offline_pilot": true,
+    "external_central_row_geometry": "VALID_RESULT_RECALL_GATE_FAILED",
+    "all_row_external_generalization": "NOT_ESTABLISHED_PARTIAL_LABELS",
+    "reject_aware_external_generalization": "BLOCKED_NO_TARGET_DOMAIN_NEGATIVE_TEST",
+    "real_video_safety": "BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH",
+    "github_upload": "COMPLETE"
+  }
+}

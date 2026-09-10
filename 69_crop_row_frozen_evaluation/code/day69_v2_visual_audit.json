@@ -1,0 +1,135 @@
+{
+  "marker": "DAY69_V2_VISUAL_AUDIT_READY",
+  "selection": "12 evenly spaced frozen misses plus 8 matched cases with highest heading error",
+  "legend": {
+    "reference_centerline": "magenta",
+    "matched_prediction": "green",
+    "other_prediction": "cyan"
+  },
+  "metric_source": "unchanged one-time frozen JSONL; rerun used only to draw predictions",
+  "rerun_match_status_agreement": "20/20",
+  "selected": [
+    {
+      "item_id": "20260111_164350",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164353",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164421",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164423",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164427",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164430",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164436",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164441",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164558",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164612",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164653",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164709",
+      "status": "MISS",
+      "position_error": null,
+      "heading_error": null
+    },
+    {
+      "item_id": "20260111_164614",
+      "status": "MATCH",
+      "position_error": 0.05727748944015635,
+      "heading_error": 15.230380872083371
+    },
+    {
+      "item_id": "20260111_164617",
+      "status": "MATCH",
+      "position_error": 0.03734723719860088,
+      "heading_error": 14.577671609646046
+    },
+    {
+      "item_id": "20260111_164659",
+      "status": "MATCH",
+      "position_error": 0.03406730330073746,
+      "heading_error": 11.95897745553243
+    },
+    {
+      "item_id": "20260111_164428",
+      "status": "MATCH",
+      "position_error": 0.045302256524538606,
+      "heading_error": 10.05662702411085
+    },
+    {
+      "item_id": "20260111_164424",
+      "status": "MATCH",
+      "position_error": 0.026534948595967785,
+      "heading_error": 9.793944274950679
+    },
+    {
+      "item_id": "20260111_164601",
+      "status": "MATCH",
+      "position_error": 0.037792565846748366,
+      "heading_error": 9.496455208838482
+    },
+    {
+      "item_id": "20260111_164657",
+      "status": "MATCH",
+      "position_error": 0.039265125790231066,
+      "heading_error": 9.439800583836654
+    },
+    {
+      "item_id": "20260111_164702",
+      "status": "MATCH",
+      "position_error": 0.03854780494115868,
+      "heading_error": 9.004882344065686
+    }
+  ],
+  "asset": "D:\\opencv-learning\\69_crop_row_frozen_evaluation\\assets\\day69_v2_ssr_external_audit.jpg",
+  "evidence_boundary": "This visual audit checks label conversion and gross geometry. It does not change frozen metrics or provide corridor/reject truth."
+}

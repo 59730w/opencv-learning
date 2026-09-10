@@ -1,0 +1,50 @@
+{
+  "marker": "DAY69_V2_SSR_FROZEN_BEFORE_EXPANSION2_ACCESS",
+  "frozen_at_local_date": "2026-09-10",
+  "source": {
+    "name": "SeedlingStemRow",
+    "kaggle_ref": "xxdxdxd/seedlingstemrow",
+    "dataset_id": 7616642,
+    "version": 7,
+    "license": "MIT",
+    "paper_doi": "10.1016/j.compag.2025.111385",
+    "metadata_url": "https://www.kaggle.com/api/v1/datasets/view/xxdxdxd/seedlingstemrow"
+  },
+  "development_access": {
+    "label": "SSR/SSR/seg-line/labels/test/160_jpg.rf.cd46e8526d5e7710739a5d5d2ee45b6d.txt",
+    "image": "SSR/SSR/images/test/160_jpg.rf.cd46e8526d5e7710739a5d5d2ee45b6d.jpg",
+    "purpose": "schema and viewpoint inspection only",
+    "permanently_excluded_from_test": true
+  },
+  "frozen_test": {
+    "evidence_role": "independent_source_later_session_central_row_positive_only",
+    "prefix": "SSR_expansion_2/SSR_expansion_2/",
+    "collection": "Fusui Guangxi, 2026-01, backlight and shadow interference",
+    "image_count": 98,
+    "segmentation_label_count": 98,
+    "paired_basename_count": 98,
+    "image_bytes": 843187818,
+    "segmentation_label_bytes": 65963,
+    "image_extensions": [".jpg"],
+    "selection": "all 98 image/seg-line basename pairs in dataset version 7",
+    "media_decoded_before_freeze": 0,
+    "label_content_read_before_freeze": 0
+  },
+  "supported_claims": [
+    "central_crop_row_detection_recall",
+    "matched_central_row_visible_position_mae_norm",
+    "matched_central_row_heading_mae_deg"
+  ],
+  "unsupported_claims": [
+    "all_row_detection_precision",
+    "all_row_detection_recall",
+    "corridor_boundary_pair_accuracy",
+    "corridor_center_accuracy",
+    "unsafe_false_valid_rate",
+    "reject_precision",
+    "reject_recall",
+    "multi_session_generalization"
+  ],
+  "anti_tuning_rule": "After the evaluator/config hash freeze and access marker, no Day61-Day68 inference setting, label conversion, matching threshold, gate, or metric definition may change in response to expansion_2 results.",
+  "failure_policy": "A failed gate remains a failed external result. Missing/evaluable-zero labels produce INVALID_REFERENCE_SUPPORT, not numeric zero accuracy."
+}
