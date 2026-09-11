@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1080" viewBox="0 0 1800 1080">
+<rect width="1800" height="1080" fill="#F4F2E8"/>
+<rect x="0" y="0" width="1800" height="275" fill="#12372F"/>
+<path d="M1120 275 L1800 25 M1320 275 L1800 100 M1520 275 L1800 180" stroke="#F2C85B" stroke-width="5" opacity=".45"/>
+<text x="90" y="94" class="kicker">PRACTICAL 04 · DELIVERY EVIDENCE</text>
+<text x="90" y="175" class="title">Offline pilot, bounded claims</text>
+<text x="90" y="225" class="subtitle">Frozen evidence · Only valid may expose a corridor center</text>
+<text x="90" y="315" class="metrics">CROW 896 frames · nav leakage 0   |   SSR matched 70/98 · pos MAE 0.0234 · heading MAE 4.374 deg</text>
+<rect x="90" y="350" width="740" height="128" rx="22" fill="#B8F2D0"/><text x="122" y="393" class="status" fill="#0E4A35">PASS</text><text x="122" y="441" class="body" fill="#17251F">离线CLI、禾迹网页及导航约束可运行</text><rect x="900" y="350" width="740" height="128" rx="22" fill="#FFD0C7"/><text x="932" y="393" class="status" fill="#70281D">FAILED</text><text x="932" y="441" class="body" fill="#17251F">SSR中央行Recall 0.7143，低于0.80</text><rect x="90" y="495" width="740" height="128" rx="22" fill="#FFD0C7"/><text x="122" y="538" class="status" fill="#70281D">FAILED</text><text x="122" y="586" class="body" fill="#17251F">同一89帧视频CPU/CUDA有37帧状态不一致</text><rect x="900" y="495" width="740" height="128" rx="22" fill="#DCE3EA"/><text x="932" y="538" class="status" fill="#35424D">NOT ESTABLISHED</text><text x="932" y="586" class="body" fill="#17251F">外部标签仅覆盖中央行，不支持完整多行结论</text><rect x="90" y="640" width="740" height="128" rx="22" fill="#FFE6A6"/><text x="122" y="683" class="status" fill="#654900">BLOCKED</text><text x="122" y="731" class="body" fill="#17251F">缺少目标域负样本，拒识能力未验证</text><rect x="900" y="640" width="740" height="128" rx="22" fill="#FFE6A6"/><text x="932" y="683" class="status" fill="#654900">BLOCKED</text><text x="932" y="731" class="body" fill="#17251F">缺少逐帧走廊真值，真实视频安全未验证</text><rect x="90" y="785" width="1550" height="128" rx="22" fill="#FFE6A6"/><text x="122" y="828" class="status" fill="#654900">BLOCKED</text><text x="122" y="876" class="body" fill="#17251F">缺少相机与车体标定，不能输出米制控制量</text>
+<text x="90" y="1040" class="footer">External central-row recall 0.7143 &lt; 0.80 · Real-video safety remains BLOCKED</text>
+<style>
+.title{font:700 54px 'Segoe UI',Arial,sans-serif;fill:#F8F4E8}
+.subtitle{font:24px 'Segoe UI',Arial,sans-serif;fill:#CEDDD5}
+.kicker{font:600 18px Consolas,monospace;letter-spacing:4px;fill:#F2C85B}
+.metrics{font:19px Consolas,monospace;fill:#55645D}
+.status{font:700 25px Consolas,monospace;letter-spacing:2px}
+.body{font:22px 'Microsoft YaHei UI','Segoe UI',Arial,sans-serif}
+.footer{font:22px Consolas,monospace;fill:#55645D}
+</style></svg>

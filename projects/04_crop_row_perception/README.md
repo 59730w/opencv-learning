@@ -20,7 +20,7 @@ CRDLD、RowDetr 与 SSR 已完成受控实测：CRDLD 只作受限同源开发/�
 | 内部有效性 | SCOPED PASS / SAFETY BLOCKED | 2026-09-05 | 多行几何与测量门通过；unsafe false-valid及真实视频安全未通过 |
 | 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-09 | 开发视频Pilot、失败审计与严重遮挡受控改进完成；无逐帧真值，不声明真实视频准确率 |
 | 冻结外部测试 | VALID RESULT / RECALL GATE FAILED | 2026-09-10 | SSR expansion_2 98/98参考有效，中央行Recall 0.7143未达0.80；匹配位置MAE 0.0234、方向MAE 4.374°通过 |
-| 交付 | DAY69 V2 LOCAL COMPLETE / REVIEW PENDING / FINAL BLOCKED | 2026-09-10 | 离线CLI、同源冻结评估与有效外部检验完成；完整多行泛化、拒识安全和真实视频安全仍阻塞 |
+| 交付 | DAY70 LOCAL COMPLETE / USER REVIEW PENDING / SAFETY BLOCKED | 2026-09-11 | 离线CLI、禾迹网页、冻结证据、自动检查、导师简报和采集/标定清单已完成；完整多行泛化、拒识安全和真实视频安全仍阻塞 |
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
@@ -163,6 +163,18 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 - 第二版SSR完整结果位于`D:/DL_code/data/crop_row_perception/day69_v2_ssr_external/`；可运行程序已经完成，但完整多行外部泛化、负样本拒识和真实视频安全均未建立。
 - 网页在真实89帧开发视频上完成浏览器上传与按钮端到端检查，得到39 valid、1 candidate、49 degraded、0 reject，导航契约违规为0；网页是本地诊断包装，不改变冻结成绩或安全边界。
 
+## Day70 产物
+
+- `../../70_crop_row_delivery_report/code/day70_delivery.py`：检查冻结哈希、来源指标、声明状态、本地网页约束、文档合同和Git候选文件卫生，并生成机器可读报告与SVG证据板；
+- `../../70_crop_row_delivery_report/code/day70_delivery_manifest.json`：固定Day69基线提交、10个核心文件SHA-256、16项来源指标和六个最终声明状态；
+- `../../70_crop_row_delivery_report/code/day70_delivery_report.json`：Day70实际交付检查结果，不重新计算或覆盖Day69成绩；
+- `../../70_crop_row_delivery_report/code/day70_device_parity_result.json`：同一89帧开发视频CPU/CUDA复现审计；37帧状态与导航可用性不一致，两端导航合同违规均为0；
+- `../../70_crop_row_delivery_report/assets/day70_evidence_board.svg`：明确区分 `PASS`、`FAILED`、`NOT_ESTABLISHED` 和 `BLOCKED` 的证据状态总览；
+- `../../70_crop_row_delivery_report/docs/day70_advisor_brief.md`：面向导师的项目目标、方法演进、运行接口、核心结果、失败案例和下一步；
+- `../../70_crop_row_delivery_report/docs/acquisition_and_calibration_checklist.md`：把目标域负样本、逐帧真值、多行实例、相机内外参、地面变换和影子模式逐项映射到阻断门；
+- `../../70_crop_row_delivery_report/code/day70_notes.md`：Day70完整中文学习笔记、运行方法、证据表和最终结论；
+- Day70只打包证据，不修改Day69模型、阈值、协议或冻结结果。最终表述是“证据清楚的离线农业机器人视觉Pilot”：工程交付通过，SSR中央行Recall 0.7143未达0.80；同一89帧输入的CPU/CUDA状态轨迹有37帧不一致，精确复现门为 `FAILED`，演示复现应显式选择CPU；完整多行外部泛化、目标域拒识、真实视频安全和米制控制仍为 `BLOCKED`。
+
 ## 修订后的 Day59～Day70 路线
 
 | Day | 学习任务 | 应有成果 |
@@ -178,7 +190,7 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 | 67 | 失败案例分组 | 已完成：事件级系统触发器与视觉标签分离；全valid复核并将严重遮挡预注册为Day68目标 |
 | 68 | 一轮受控改进 | 已完成：只改严重遮挡下的可观测性/拒绝，拦截3/3开发期目标并保留96.53% valid，非valid导航泄漏为0 |
 | 69 | 冻结测试 | 第二版已完成：修复RowDetr暴露的零参考评价缺陷；SSR 98张有效外部中央行评估中位置/方向门通过、Recall 0.7143未达0.80；安全门保持BLOCKED |
-| 70 | 交付与导师汇报 | Demo、可复现代码、指标/失败报告、证据登记、限制和下一步采集/标定清单 |
+| 70 | 交付与导师汇报 | 已完成：Demo、可复现检查器、指标/失败报告、证据登记、限制和下一步采集/标定清单 |
 
 Day70的目标是“证据清楚的离线农业机器人视觉Pilot”，不是已经能安全控制真实机器人。
 真实车体边界、米制走廊、闭环控制和安全认证仍需要相机/车体标定、目标域负样本与实车测试。

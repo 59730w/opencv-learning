@@ -1,6 +1,6 @@
 schema_version: 1
 project_id: 04_crop_row_perception
-updated: 2026-09-06
+updated: 2026-09-11
 
 entries:
   - id: day59_target_contract_v2
@@ -103,6 +103,74 @@ entries:
     frozen_same_source_video_episodes_accessed: false
     frozen_external_accessed: false
 
+  - id: day66_offline_video_pilot
+    role: full_development_video_pilot
+    status: ENGINEERING_PASS_REAL_VIDEO_SAFETY_BLOCKED
+    evidence: ../../66_crop_row_offline_video_pilot/code/day66_notes.md
+    development_scope: LeCropFollow_CROW_25_episodes_10995_frames
+    state_counts: valid_490; candidate_47; degraded_10436; reject_22
+    navigation_contract_violations: 0
+    allowed_use: 证明冻结配置完整运行、逐帧记录/叠加对齐以及非valid导航隔离
+    forbidden_use: 声明逐帧走廊准确率、真实视频安全率、独立外部泛化或实车控制可靠性
+    real_video_safety_gate: BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH
+
+  - id: day67_failure_taxonomy_v3
+    role: model_assisted_development_review
+    status: WEIGHTED_EVENT_AUDIT_COMPLETE_NOT_GROUND_TRUTH
+    evidence: ../../67_crop_row_failure_taxonomy/code/day67_notes.md
+    population: 4809_continuous_events
+    reviewed: all_296_valid_events_plus_240_seeded_SRSWOR_nonvalid_events
+    selected_day68_target: severe_occlusion_35_reviewed_events_14_episodes_HT_43.14pct_actionable_denominator
+    allowed_use: 为一次开发期受控改进选择有跨episode支持的失败原因
+    forbidden_use: 把模型辅助复核当作安全真值、外部错误率或真实部署风险率
+
+  - id: day68_severe_occlusion_guard
+    role: controlled_development_intervention
+    status: ENGINEERING_PASS_SAFETY_BLOCKED
+    evidence: ../../68_crop_row_severe_occlusion/code/day68_notes.md
+    development_result: caught_3_of_3_reviewed_targets; retained_473_of_490_day66_valid; suppressed_14_reviewed_appropriate_frames
+    navigation_contract_violations: 0
+    allowed_use: 证明冻结开发样本上严重遮挡恢复守卫的因果行为和工程合同
+    forbidden_use: 声明真实遮挡安全率、全域改进或独立外部泛化
+
+  - id: day69_crow_frozen_video
+    role: frozen_same_source_video_engineering_test
+    status: ENGINEERING_PASS_ACCURACY_AND_SAFETY_UNAVAILABLE
+    evidence: ../../69_crop_row_frozen_evaluation/code/day69_frozen_result_summary.json
+    scope: 6_episodes_896_frames
+    state_counts: valid_18; candidate_12; degraded_841; reject_25
+    navigation_contract_violations: 0
+    allowed_use: 证明未调参同源冻结视频上的端到端运行、文件对齐和导航状态合同
+    forbidden_use: 把同源冻结称为独立外部泛化，或在无逐帧真值时报告安全准确率
+    real_video_safety_gate: BLOCKED_NO_FRAMEWISE_CORRIDOR_VALIDITY_GROUND_TRUTH
+
+  - id: day69_ssr_expansion2_frozen_external
+    role: frozen_external_central_row_positive_geometry
+    status: VALID_RESULT_RECALL_GATE_FAILED
+    evidence: ../../69_crop_row_frozen_evaluation/code/day69_v2_result_summary.json
+    scope: 98_hash_verified_evaluable_central_row_references
+    result: matched_70; recall_0.7143_failed_minimum_0.80; matched_position_mae_0.0234_pass; matched_heading_mae_4.374deg_pass
+    allowed_use: 报告独立SSR中央行正样本的召回负结果以及已匹配位置/方向误差
+    forbidden_use: 事后调参重测、完整多行外部泛化、目标域拒识或真实机器人安全声明
+
+  - id: day70_evidence_bounded_delivery
+    role: reproducible_delivery_package
+    status: DELIVERED_SAFETY_BLOCKED
+    evidence: ../../70_crop_row_delivery_report/code/day70_delivery_report.json; ../../70_crop_row_delivery_report/docs/day70_advisor_brief.md
+    baseline_commit: 43f0951c36ee45d9c4b5991e6305bca526451696
+    allowed_use: 演示可运行离线Pilot、复核冻结证据、显示失败门与下一阶段数据/标定需求
+    forbidden_use: 修改Day69冻结结果、掩盖Recall失败、声明完整外部泛化或真实机器人可用性
+    github_upload: INCLUDED_IN_DAY70_DELIVERY_COMMIT
+
+  - id: day70_cpu_cuda_parity_audit
+    role: post_delivery_reproducibility_audit
+    status: EXACT_PARITY_FAILED_NAVIGATION_CONTRACT_PRESERVED
+    evidence: ../../70_crop_row_delivery_report/code/day70_device_parity_result.json
+    scope: same_byte_identical_89_frame_development_video
+    result: cpu_valid_39; cuda_valid_26; status_mismatch_37_frames; navigation_availability_mismatch_37_frames; both_navigation_contract_violations_0
+    allowed_use: 说明当前运行结果依赖设备并要求复现实验显式固定CPU
+    forbidden_use: 修改Day69冻结结果、将设备差异隐藏为可忽略波动，或将零导航泄漏等同真实安全
+
   - id: day59_open_source_review
     role: background_reference
     status: AVAILABLE
@@ -129,14 +197,14 @@ entries:
     blockers: handheld_viewpoint_mismatch; provenance_groups_unknown; reject_negatives_missing
 
   - id: frozen_external_test
-    role: frozen_external_test
-    status: AVAILABLE_POSITIVE_ONLY
+    role: accessed_protocol_development_after_invalid_reference_adjudication
+    status: INVALID_REFERENCE_TRANSFORMATION_RETIRED_AS_EXTERNAL_CONFIRMATION
     candidate: RowDetr Sorghum robot subset
-    evidence: data/frozen_external_sorghum_manifest.json
+    evidence: data/frozen_external_sorghum_manifest.json; ../../69_crop_row_frozen_evaluation/code/day69_external_adjudication.json
     local_path: D:/DL_code/data/crop_row_perception/sources/rowdetr_kaggle_8432059/staging/crop-row-detection
-    allowed_use: 模型和规则全部冻结后进行一次正样本位置与方向评价
-    forbidden_use: 调参、训练、拒识评价、完整外部泛化声明
-    blockers: reject_negatives_missing; original_sequence_keys_unavailable
+    allowed_use: 说明原预注册y=0.40参考转换为何无可评价折线，并用于局部可见评价协议开发
+    forbidden_use: 把原始零结果解释为模型准确率或继续称为未触碰外部确认
+    blockers: invalid_original_reference_support; reject_negatives_missing; original_sequence_keys_unavailable
 
   - id: target_domain_reject_test
     role: frozen_external_reject_negatives

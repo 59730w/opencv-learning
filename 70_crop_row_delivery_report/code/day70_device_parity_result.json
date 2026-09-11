@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "marker": "DAY70_CPU_CUDA_PARITY_RESULT",
+  "date": "2026-09-11",
+  "evidence_role": "POST_DELIVERY_REPRODUCIBILITY_AUDIT_NOT_MODEL_SELECTION",
+  "source_video_sha256": "b9da6a1575659cdf8478764736fbf26bf14b7aed4b69bafa20d2b7b4a0095968",
+  "source_frames": 89,
+  "same_source_bytes_verified": true,
+  "cpu": {
+    "device": "cpu",
+    "status_counts": {
+      "valid": 39,
+      "candidate": 1,
+      "degraded": 49,
+      "reject": 0
+    },
+    "navigation_contract_violations": 0
+  },
+  "cuda": {
+    "device": "cuda",
+    "status_counts": {
+      "valid": 26,
+      "candidate": 1,
+      "degraded": 62,
+      "reject": 0
+    },
+    "navigation_contract_violations": 0
+  },
+  "comparison": {
+    "exact_status_count_parity": false,
+    "status_mismatch_frames": 37,
+    "navigation_availability_mismatch_frames": 37,
+    "valid_only_navigation_contract_preserved_on_both_devices": true
+  },
+  "interpretation": "Exact CPU/CUDA output parity failed on this 89-frame development video. Use explicit CPU to reproduce the documented browser demonstration counts. This audit does not change the frozen Day69 result."
+}
