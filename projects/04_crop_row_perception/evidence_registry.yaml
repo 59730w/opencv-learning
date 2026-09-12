@@ -180,7 +180,7 @@ entries:
     stable_entrypoint: ../../71_crop_row_device_parity_diagnosis/code/run_crop_row_pilot_device_stable.py
     allowed_use: 在当前环境复现Day70差异，并使用关闭cuDNN TF32的CUDA batch32策略运行开发期离线Pilot
     forbidden_use: 声明概率逐位一致、所有视频或所有设备均一致、修改Day69冻结成绩、外部泛化、真实安全或机器人控制可靠性
-    github_upload: USER_APPROVED_PENDING_PUSH
+    github_upload: PUSHED_TO_ORIGIN_MAIN_COMMIT_ed61d15
 
   - id: day59_open_source_review
     role: background_reference

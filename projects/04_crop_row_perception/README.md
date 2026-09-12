@@ -20,7 +20,7 @@ CRDLD、RowDetr 与 SSR 已完成受控实测：CRDLD 只作受限同源开发/�
 | 内部有效性 | SCOPED PASS / SAFETY BLOCKED | 2026-09-05 | 多行几何与测量门通过；unsafe false-valid及真实视频安全未通过 |
 | 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-09 | 开发视频Pilot、失败审计与严重遮挡受控改进完成；无逐帧真值，不声明真实视频准确率 |
 | 冻结外部测试 | VALID RESULT / RECALL GATE FAILED | 2026-09-10 | SSR expansion_2 98/98参考有效，中央行Recall 0.7143未达0.80；匹配位置MAE 0.0234、方向MAE 4.374°通过 |
-| 交付 | DAY71 COMPLETE / USER APPROVED FOR GITHUB / SAFETY BLOCKED | 2026-09-12 | Day70交付保持冻结；Day71分层诊断和稳定CUDA CLI已由用户确认，进入GitHub交付 |
+| 交付 | DAY71 GITHUB UPLOADED / SAFETY BLOCKED | 2026-09-12 | Day70交付保持冻结；Day71分层诊断和稳定CUDA CLI已上传，主体提交 `ed61d15` |
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
