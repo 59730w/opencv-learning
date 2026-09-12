@@ -1,6 +1,6 @@
 # Practical 04：农业机器人作物行视觉感知
 
-这是一个 Day59-Day70 的短周期学习项目，目标是把已有 OpenCV、深度学习、C++和实验验证能力迁移到农业机器人前视机器视觉问题。
+这是一个 Day59-Day71 的短周期学习项目，目标是把已有 OpenCV、深度学习、C++和实验验证能力迁移到农业机器人前视机器视觉问题。
 
 当前只研究离线视觉感知：从单目RGB图像或视频帧检测所有满足可见性规则的作物行，选择
 相机中心左右最近的可靠作物行作为当前走廊边界，再估计图像平面走廊中心、方向、消失点、
@@ -16,11 +16,11 @@ CRDLD、RowDetr 与 SSR 已完成受控实测：CRDLD 只作受限同源开发/�
 | 目标契约 | PASS | 2026-08-31 | `target_contract.yaml` |
 | 数据可行性 | SCOPED PASS / FULL BLOCKED | 2026-09-02 | 正样本学习可继续；许可、最高分组与拒识负样本仍阻断完整声明 |
 | 环境 | SCOPED PASS | 2026-09-02 | 受限同源正样本学习环境可执行；不解除完整数据门阻断 |
-| 管线试运行 | ENGINEERING PASS | 2026-09-10 | Day61–69管线、可运行CLI、视频对齐、状态约束、事件审计与受控遮挡守卫通过 |
+| 管线试运行 | ENGINEERING PASS / DEVICE POLICY DEVELOPMENT PASS | 2026-09-12 | Day61–69管线通过；Day71在一段89帧开发视频上定位cuDNN TF32差异并验证关闭TF32的稳定CUDA入口 |
 | 内部有效性 | SCOPED PASS / SAFETY BLOCKED | 2026-09-05 | 多行几何与测量门通过；unsafe false-valid及真实视频安全未通过 |
 | 基线/OOD开发 | ENGINEERING PASS / ACCURACY BLOCKED | 2026-09-09 | 开发视频Pilot、失败审计与严重遮挡受控改进完成；无逐帧真值，不声明真实视频准确率 |
 | 冻结外部测试 | VALID RESULT / RECALL GATE FAILED | 2026-09-10 | SSR expansion_2 98/98参考有效，中央行Recall 0.7143未达0.80；匹配位置MAE 0.0234、方向MAE 4.374°通过 |
-| 交付 | DAY70 LOCAL COMPLETE / USER REVIEW PENDING / SAFETY BLOCKED | 2026-09-11 | 离线CLI、禾迹网页、冻结证据、自动检查、导师简报和采集/标定清单已完成；完整多行泛化、拒识安全和真实视频安全仍阻塞 |
+| 交付 | DAY71 COMPLETE / USER APPROVED FOR GITHUB / SAFETY BLOCKED | 2026-09-12 | Day70交付保持冻结；Day71分层诊断和稳定CUDA CLI已由用户确认，进入GitHub交付 |
 
 只有显式 `PASS` 才能进入下一门。开源项目展示和论文指标均不算本项目效果证据。
 
@@ -175,7 +175,17 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 - `../../70_crop_row_delivery_report/code/day70_notes.md`：Day70完整中文学习笔记、运行方法、证据表和最终结论；
 - Day70只打包证据，不修改Day69模型、阈值、协议或冻结结果。最终表述是“证据清楚的离线农业机器人视觉Pilot”：工程交付通过，SSR中央行Recall 0.7143未达0.80；同一89帧输入的CPU/CUDA状态轨迹有37帧不一致，精确复现门为 `FAILED`，演示复现应显式选择CPU；完整多行外部泛化、目标域拒识、真实视频安全和米制控制仍为 `BLOCKED`。
 
-## 修订后的 Day59～Day70 路线
+## Day71 产物
+
+- `../../71_crop_row_device_parity_diagnosis/code/day71_device_parity.py`：六臂CPU/CUDA、后端、batch和TF32受控诊断；
+- `../../71_crop_row_device_parity_diagnosis/code/day71_device_parity_result.json`：根因、逐层差异、运行时间和机器可读验收结果；
+- `../../71_crop_row_device_parity_diagnosis/code/day71_frame_differences.csv`：89帧设备状态、解码行数和概率差异；
+- `../../71_crop_row_device_parity_diagnosis/code/run_crop_row_pilot_device_stable.py`：关闭cuDNN TF32、强制CUDA batch32并把实际策略写入报告的稳定执行入口；
+- `../../71_crop_row_device_parity_diagnosis/code/day71_notes.md`：完整中文学习笔记和证据边界；
+- 生产CPU与默认CUDA batch32的37帧状态/导航差异被精确复现；关闭TF32后，真实稳定CUDA与生产CPU CLI达到89/89帧状态和导航严格一致，连续几何最大绝对差4.823e-06（容差1e-05）；输出39 valid、1 candidate、49 degraded、0 reject且导航违规为0；
+- 该结果只覆盖当前环境的一段开发视频，不证明全部视频、其他GPU、外部泛化、拒识安全或真实机器人可靠性。
+
+## 修订后的 Day59～Day71 路线
 
 | Day | 学习任务 | 应有成果 |
 |---|---|---|
@@ -191,6 +201,7 @@ Day61–68；这不等于完整数据门通过，也不允许把管线工程结�
 | 68 | 一轮受控改进 | 已完成：只改严重遮挡下的可观测性/拒绝，拦截3/3开发期目标并保留96.53% valid，非valid导航泄漏为0 |
 | 69 | 冻结测试 | 第二版已完成：修复RowDetr暴露的零参考评价缺陷；SSR 98张有效外部中央行评估中位置/方向门通过、Recall 0.7143未达0.80；安全门保持BLOCKED |
 | 70 | 交付与导师汇报 | 已完成：Demo、可复现检查器、指标/失败报告、证据登记、限制和下一步采集/标定清单 |
+| 71 | 设备一致性诊断与稳定执行 | 已完成：分层隔离后定位cuDNN TF32路径；稳定CUDA batch32在89帧开发视频上与生产CPU最终一致，完整跨设备结论仍待扩大验证 |
 
-Day70的目标是“证据清楚的离线农业机器人视觉Pilot”，不是已经能安全控制真实机器人。
+Day70～71的目标是“证据清楚且运行策略可复核的离线农业机器人视觉Pilot”，不是已经能安全控制真实机器人。
 真实车体边界、米制走廊、闭环控制和安全认证仍需要相机/车体标定、目标域负样本与实车测试。

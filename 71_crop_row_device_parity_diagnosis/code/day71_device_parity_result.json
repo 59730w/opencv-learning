@@ -1,0 +1,1171 @@
+{
+  "schema_version": 1,
+  "marker": "DAY71_DEVICE_PARITY_DIAGNOSIS_COMPLETE",
+  "date": "2026-09-12",
+  "evidence_role": "DEVELOPMENT_REPRODUCIBILITY_DIAGNOSIS_NOT_MODEL_SELECTION",
+  "claim_boundary": "No model, threshold, frozen external result, safety claim, or robot-control claim was changed.",
+  "source": {
+    "video": "D:\\DL_code\\data\\crop_row_perception\\sources\\lecrop_data\\rgb_episodes\\crowfollow_lecropfollow_exp_2026-01-26-12-35-02_ep0.mp4",
+    "sha256": "b9da6a1575659cdf8478764736fbf26bf14b7aed4b69bafa20d2b7b4a0095968",
+    "reported_frames": 89,
+    "decoded_frames": 89,
+    "feature_shape": [
+      89,
+      4,
+      192,
+      192
+    ],
+    "feature_dtype": "uint8",
+    "feature_fingerprint": "1cf4a691d5acf7a5d9a2ce8057d0d9502e143254831e9bc7400a9b661478ecff"
+  },
+  "environment": {
+    "python": "3.9.25",
+    "torch": "2.5.1+cu121",
+    "cuda_runtime": "12.1",
+    "cudnn": 90100,
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "deterministic_algorithms": false,
+    "cudnn_benchmark": false
+  },
+  "frozen_inputs_sha256": {
+    "video": "b9da6a1575659cdf8478764736fbf26bf14b7aed4b69bafa20d2b7b4a0095968",
+    "checkpoint": "b6ce2b6335bccc8e15447d148f6453e3f1e6463625ae6d11529499ef07e337cc",
+    "day65 result": "bb921d1035206d4dcd6f3da9296bb83d8ab8fbdc83478a4bf6a2ef8bb9928ea7",
+    "temporal config": "ba92053e264da2fea2ad4f3b5dfc14d14562d63d8cabd44e6a4a3bf8f1a5459b",
+    "occlusion config": "5c4d93bc6c6a9cada0a7dd2a97e33c5620ae478d895f0051021dc388036af0c2"
+  },
+  "temporal_freeze_evidence": {
+    "exact_day65_match": true,
+    "frozen_config_sha256": "ba92053e264da2fea2ad4f3b5dfc14d14562d63d8cabd44e6a4a3bf8f1a5459b",
+    "day65_result_sha256": "bb921d1035206d4dcd6f3da9296bb83d8ab8fbdc83478a4bf6a2ef8bb9928ea7",
+    "allowed_roles": [
+      "temporal_development",
+      "shifted_development"
+    ],
+    "frozen_role": "frozen_same_source_holdout"
+  },
+  "arms": {
+    "cpu_eager_bs1": {
+      "device": "cpu",
+      "backend": "torch_eager",
+      "batch_size": 1,
+      "cudnn_allow_tf32": null,
+      "probability_fingerprint": "834ab9eeab38e0900d5d30dabd752a5f9b173b34dc4afdd06536d73834e84843",
+      "repeat_determinism": [
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        }
+      ],
+      "runtime_ms_per_frame_repeats": [
+        30.365158426966303,
+        31.807368539325847,
+        30.328453932584285,
+        30.527010112359573,
+        30.158661797752806
+      ],
+      "runtime_ms_per_frame_median": 30.365158426966303,
+      "status_counts": {
+        "valid": 39,
+        "candidate": 1,
+        "degraded": 49,
+        "reject": 0
+      },
+      "navigation_contract_violations": 0,
+      "instrumented_vs_canonical_predictor": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0
+      }
+    },
+    "cpu_optimized_bs1": {
+      "device": "cpu",
+      "backend": "torchscript_optimize_for_inference_channels_last",
+      "batch_size": 1,
+      "cudnn_allow_tf32": null,
+      "probability_fingerprint": "47d18cffdd6a18c5012e45ce5bb81a1fff77cf9d4e7043442360d34c2430782a",
+      "repeat_determinism": [
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        }
+      ],
+      "runtime_ms_per_frame_repeats": [
+        20.122059550561815,
+        20.257738202247175,
+        19.974867415730326,
+        21.136679775280903,
+        20.03892134831463
+      ],
+      "runtime_ms_per_frame_median": 20.122059550561815,
+      "status_counts": {
+        "valid": 39,
+        "candidate": 1,
+        "degraded": 49,
+        "reject": 0
+      },
+      "navigation_contract_violations": 0,
+      "instrumented_vs_canonical_predictor": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0
+      }
+    },
+    "cuda_eager_bs1": {
+      "device": "cuda",
+      "backend": "torch_eager",
+      "batch_size": 1,
+      "cudnn_allow_tf32": true,
+      "probability_fingerprint": "91f36379c68657ce51a500b743d70ba79abf8fc82c060e1aea85538cace158a4",
+      "repeat_determinism": [
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        }
+      ],
+      "runtime_ms_per_frame_repeats": [
+        4.980568539325822,
+        4.77739325842695,
+        4.980738202247157,
+        4.844382022471857,
+        5.037540449438207
+      ],
+      "runtime_ms_per_frame_median": 4.980568539325822,
+      "status_counts": {
+        "valid": 33,
+        "candidate": 1,
+        "degraded": 55,
+        "reject": 0
+      },
+      "navigation_contract_violations": 0,
+      "instrumented_vs_canonical_predictor": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0
+      }
+    },
+    "cuda_eager_bs32": {
+      "device": "cuda",
+      "backend": "torch_eager",
+      "batch_size": 32,
+      "cudnn_allow_tf32": true,
+      "probability_fingerprint": "35d3098953bf9d62b4894cd32eb0f7d1eacb588694c4dc0e6bacc10ec00b7b7d",
+      "repeat_determinism": [
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        }
+      ],
+      "runtime_ms_per_frame_repeats": [
+        2.089479775280922,
+        2.08490337078655,
+        2.0822640449438268,
+        2.093522471910116,
+        2.0915876404494247
+      ],
+      "runtime_ms_per_frame_median": 2.089479775280922,
+      "status_counts": {
+        "valid": 26,
+        "candidate": 1,
+        "degraded": 62,
+        "reject": 0
+      },
+      "navigation_contract_violations": 0,
+      "instrumented_vs_canonical_predictor": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0
+      }
+    },
+    "cuda_no_tf32_eager_bs1": {
+      "device": "cuda",
+      "backend": "torch_eager",
+      "batch_size": 1,
+      "cudnn_allow_tf32": false,
+      "probability_fingerprint": "84352bd263c47a227006e7c2173a3b565343c789f5a0c25bf327a6ebab884f3e",
+      "repeat_determinism": [
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        }
+      ],
+      "runtime_ms_per_frame_repeats": [
+        4.629089887640431,
+        4.61766853932584,
+        4.693523595505563,
+        4.756605617977527,
+        4.622247191011249
+      ],
+      "runtime_ms_per_frame_median": 4.629089887640431,
+      "status_counts": {
+        "valid": 39,
+        "candidate": 1,
+        "degraded": 49,
+        "reject": 0
+      },
+      "navigation_contract_violations": 0,
+      "instrumented_vs_canonical_predictor": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0
+      }
+    },
+    "cuda_no_tf32_eager_bs32": {
+      "device": "cuda",
+      "backend": "torch_eager",
+      "batch_size": 32,
+      "cudnn_allow_tf32": false,
+      "probability_fingerprint": "e8bb4477d475c7d6a5cfbb94d43943067fba8873d96afd4b6fe821e9da82a522",
+      "repeat_determinism": [
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        },
+        {
+          "frame_count": 89,
+          "exactly_equal": true,
+          "max_abs_difference": 0.0,
+          "mean_abs_difference": 0.0,
+          "threshold_crossing_pixels": 0,
+          "frames_with_threshold_crossings": 0,
+          "first_threshold_crossing_frame": null
+        }
+      ],
+      "runtime_ms_per_frame_repeats": [
+        2.0576224719101246,
+        2.0420617977528446,
+        2.066377528089942,
+        2.058924719101105,
+        2.074516853932591
+      ],
+      "runtime_ms_per_frame_median": 2.058924719101105,
+      "status_counts": {
+        "valid": 39,
+        "candidate": 1,
+        "degraded": 49,
+        "reject": 0
+      },
+      "navigation_contract_violations": 0,
+      "instrumented_vs_canonical_predictor": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0
+      }
+    }
+  },
+  "comparisons": {
+    "cpu_eager_bs1__cpu_optimized_bs1": {
+      "frame_count": 89,
+      "status_mismatch_frames": 0,
+      "navigation_mismatch_frames": 0,
+      "first_status_mismatch_frame": null,
+      "first_navigation_mismatch_frame": null,
+      "status_mismatch_indices": [],
+      "navigation_mismatch_indices": [],
+      "status_mismatch_runs": [],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 1.0401010513305664e-05,
+        "mean_abs_difference": 7.978487477901958e-08,
+        "threshold_crossing_pixels": 0,
+        "frames_with_threshold_crossings": 0,
+        "first_threshold_crossing_frame": null
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 4.798173904418945e-06
+      }
+    },
+    "cpu_eager_bs1__cuda_eager_bs1": {
+      "frame_count": 89,
+      "status_mismatch_frames": 14,
+      "navigation_mismatch_frames": 14,
+      "first_status_mismatch_frame": 21,
+      "first_navigation_mismatch_frame": 21,
+      "status_mismatch_indices": [
+        21,
+        22,
+        23,
+        24,
+        26,
+        27,
+        33,
+        34,
+        35,
+        36,
+        37,
+        43,
+        44,
+        45
+      ],
+      "navigation_mismatch_indices": [
+        21,
+        22,
+        23,
+        24,
+        26,
+        27,
+        33,
+        34,
+        35,
+        36,
+        37,
+        43,
+        44,
+        45
+      ],
+      "status_mismatch_runs": [
+        [
+          21,
+          24
+        ],
+        [
+          26,
+          27
+        ],
+        [
+          33,
+          37
+        ],
+        [
+          43,
+          45
+        ]
+      ],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 0.0074641406536102295,
+        "mean_abs_difference": 7.389850078191022e-05,
+        "threshold_crossing_pixels": 329,
+        "frames_with_threshold_crossings": 82,
+        "first_threshold_crossing_frame": 0
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.8056037176344464,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.004085540771484375
+      }
+    },
+    "cuda_eager_bs1__cuda_eager_bs32": {
+      "frame_count": 89,
+      "status_mismatch_frames": 31,
+      "navigation_mismatch_frames": 31,
+      "first_status_mismatch_frame": 21,
+      "first_navigation_mismatch_frame": 21,
+      "status_mismatch_indices": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        28,
+        29,
+        30,
+        31,
+        32,
+        38,
+        39,
+        40,
+        41,
+        42,
+        46,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87
+      ],
+      "navigation_mismatch_indices": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        28,
+        29,
+        30,
+        31,
+        32,
+        38,
+        39,
+        40,
+        41,
+        42,
+        46,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87
+      ],
+      "status_mismatch_runs": [
+        [
+          21,
+          25
+        ],
+        [
+          28,
+          32
+        ],
+        [
+          38,
+          42
+        ],
+        [
+          46,
+          46
+        ],
+        [
+          48,
+          55
+        ],
+        [
+          81,
+          87
+        ]
+      ],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 0.009676158428192139,
+        "mean_abs_difference": 9.060645597850409e-05,
+        "threshold_crossing_pixels": 411,
+        "frames_with_threshold_crossings": 88,
+        "first_threshold_crossing_frame": 0
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.9474923066963301,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0048111677169799805
+      }
+    },
+    "cpu_optimized_bs1__cuda_eager_bs32": {
+      "frame_count": 89,
+      "status_mismatch_frames": 37,
+      "navigation_mismatch_frames": 37,
+      "first_status_mismatch_frame": 25,
+      "first_navigation_mismatch_frame": 25,
+      "status_mismatch_indices": [
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87
+      ],
+      "navigation_mismatch_indices": [
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87
+      ],
+      "status_mismatch_runs": [
+        [
+          25,
+          46
+        ],
+        [
+          48,
+          55
+        ],
+        [
+          81,
+          87
+        ]
+      ],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 0.005856573581695557,
+        "mean_abs_difference": 5.693407850145054e-05,
+        "threshold_crossing_pixels": 252,
+        "frames_with_threshold_crossings": 83,
+        "first_threshold_crossing_frame": 0
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.9392699783651042,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.002576768398284912
+      }
+    },
+    "cpu_eager_bs1__cuda_no_tf32_eager_bs1": {
+      "frame_count": 89,
+      "status_mismatch_frames": 0,
+      "navigation_mismatch_frames": 0,
+      "first_status_mismatch_frame": null,
+      "first_navigation_mismatch_frame": null,
+      "status_mismatch_indices": [],
+      "navigation_mismatch_indices": [],
+      "status_mismatch_runs": [],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 1.1086463928222656e-05,
+        "mean_abs_difference": 9.50310747358604e-08,
+        "threshold_crossing_pixels": 1,
+        "frames_with_threshold_crossings": 1,
+        "first_threshold_crossing_frame": 59
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 3.6656856536865234e-06
+      }
+    },
+    "cuda_eager_bs1__cuda_no_tf32_eager_bs1": {
+      "frame_count": 89,
+      "status_mismatch_frames": 14,
+      "navigation_mismatch_frames": 14,
+      "first_status_mismatch_frame": 21,
+      "first_navigation_mismatch_frame": 21,
+      "status_mismatch_indices": [
+        21,
+        22,
+        23,
+        24,
+        26,
+        27,
+        33,
+        34,
+        35,
+        36,
+        37,
+        43,
+        44,
+        45
+      ],
+      "navigation_mismatch_indices": [
+        21,
+        22,
+        23,
+        24,
+        26,
+        27,
+        33,
+        34,
+        35,
+        36,
+        37,
+        43,
+        44,
+        45
+      ],
+      "status_mismatch_runs": [
+        [
+          21,
+          24
+        ],
+        [
+          26,
+          27
+        ],
+        [
+          33,
+          37
+        ],
+        [
+          43,
+          45
+        ]
+      ],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 0.007466435432434082,
+        "mean_abs_difference": 7.389766314977983e-05,
+        "threshold_crossing_pixels": 330,
+        "frames_with_threshold_crossings": 82,
+        "first_threshold_crossing_frame": 0
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.8056037176344464,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.004083752632141113
+      }
+    },
+    "cpu_eager_bs1__cuda_no_tf32_eager_bs32": {
+      "frame_count": 89,
+      "status_mismatch_frames": 0,
+      "navigation_mismatch_frames": 0,
+      "first_status_mismatch_frame": null,
+      "first_navigation_mismatch_frame": null,
+      "status_mismatch_indices": [],
+      "navigation_mismatch_indices": [],
+      "status_mismatch_runs": [],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 2.6226043701171875e-05,
+        "mean_abs_difference": 2.0140589219146862e-07,
+        "threshold_crossing_pixels": 0,
+        "frames_with_threshold_crossings": 0,
+        "first_threshold_crossing_frame": null
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 9.179115295410156e-06
+      }
+    },
+    "cuda_no_tf32_eager_bs1__cuda_no_tf32_eager_bs32": {
+      "frame_count": 89,
+      "status_mismatch_frames": 0,
+      "navigation_mismatch_frames": 0,
+      "first_status_mismatch_frame": null,
+      "first_navigation_mismatch_frame": null,
+      "status_mismatch_indices": [],
+      "navigation_mismatch_indices": [],
+      "status_mismatch_runs": [],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 2.765655517578125e-05,
+        "mean_abs_difference": 1.8700557965632513e-07,
+        "threshold_crossing_pixels": 1,
+        "frames_with_threshold_crossings": 1,
+        "first_threshold_crossing_frame": 59
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 7.927417755126953e-06
+      }
+    },
+    "cpu_optimized_bs1__cuda_no_tf32_eager_bs32": {
+      "frame_count": 89,
+      "status_mismatch_frames": 0,
+      "navigation_mismatch_frames": 0,
+      "first_status_mismatch_frame": null,
+      "first_navigation_mismatch_frame": null,
+      "status_mismatch_indices": [],
+      "navigation_mismatch_indices": [],
+      "status_mismatch_runs": [],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 2.8908252716064453e-05,
+        "mean_abs_difference": 2.0101072874559974e-07,
+        "threshold_crossing_pixels": 0,
+        "frames_with_threshold_crossings": 0,
+        "first_threshold_crossing_frame": null
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.0,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 9.238719940185547e-06
+      }
+    },
+    "cuda_eager_bs32__cuda_no_tf32_eager_bs32": {
+      "frame_count": 89,
+      "status_mismatch_frames": 37,
+      "navigation_mismatch_frames": 37,
+      "first_status_mismatch_frame": 25,
+      "first_navigation_mismatch_frame": 25,
+      "status_mismatch_indices": [
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87
+      ],
+      "navigation_mismatch_indices": [
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87
+      ],
+      "status_mismatch_runs": [
+        [
+          25,
+          46
+        ],
+        [
+          48,
+          55
+        ],
+        [
+          81,
+          87
+        ]
+      ],
+      "probability": {
+        "frame_count": 89,
+        "exactly_equal": false,
+        "max_abs_difference": 0.00586429238319397,
+        "mean_abs_difference": 5.693762109313316e-05,
+        "threshold_crossing_pixels": 252,
+        "frames_with_threshold_crossings": 83,
+        "first_threshold_crossing_frame": 0
+      },
+      "decoded_observations": {
+        "frame_count": 89,
+        "row_count_mismatch_frames": 0,
+        "row_count_mismatch_indices": [],
+        "first_row_count_mismatch_frame": null,
+        "max_matched_near_x_abs_difference": 0.9392699783651042,
+        "max_matched_far_x_abs_difference": 0.0,
+        "max_matched_confidence_abs_difference": 0.0025783181190490723
+      }
+    }
+  },
+  "root_cause": {
+    "status": "ROOT_CAUSE_IDENTIFIED",
+    "primary_factor": "cudnn_tf32_execution_path",
+    "reason": "Disabling only cuDNN TF32 removed final-state differences at both CUDA batch sizes on the development audit video."
+  },
+  "recommended_execution_policy": {
+    "status": "PASS_DEVELOPMENT_REPRODUCIBILITY",
+    "policy": "cuda_no_tf32_eager_batch32",
+    "changes_model_or_thresholds": false,
+    "reason": "Disabling cuDNN TF32 retained batch-32 throughput while removing final-state differences on the development audit video."
+  },
+  "emitted_cli_comparison": {
+    "frame_count": 89,
+    "status_mismatch_frames": 0,
+    "navigation_mismatch_frames": 0,
+    "first_status_mismatch_frame": null,
+    "first_navigation_mismatch_frame": null,
+    "status_mismatch_indices": [],
+    "navigation_mismatch_indices": [],
+    "status_mismatch_runs": [],
+    "frame_identity_mismatch_frames": 0,
+    "frame_identity_mismatch_indices": [],
+    "geometry_mismatch_frames": 0,
+    "geometry_mismatch_indices": [],
+    "geometry_structural_mismatch_frames": 0,
+    "geometry_structural_mismatch_indices": [],
+    "geometry_exact_difference_frames": 89,
+    "geometry_max_abs_difference": 4.8223734894076165e-06,
+    "geometry_abs_tolerance": 1e-05,
+    "left_jsonl": "D:\\DL_code\\data\\crop_row_perception\\day71_device_parity\\production_cpu_cli_run\\crowfollow_lecropfollow_exp_2026-01-26-12-35-02_ep0\\crowfollow_lecropfollow_exp_2026-01-26-12-35-02_ep0_frames.jsonl",
+    "right_jsonl": "D:\\DL_code\\data\\crop_row_perception\\day71_device_parity\\stable_cli_run\\crowfollow_lecropfollow_exp_2026-01-26-12-35-02_ep0\\crowfollow_lecropfollow_exp_2026-01-26-12-35-02_ep0_frames.jsonl"
+  },
+  "emitted_cli_provenance": {
+    "valid": true,
+    "checks": {
+      "reports_are_day69_outputs": true,
+      "reports_bind_same_input_video": true,
+      "reports_bind_compared_jsonl_paths": true,
+      "reports_bind_compared_jsonl_hashes": true,
+      "reports_and_jsonl_frame_counts_match": true,
+      "jsonl_frame_indices_are_sequential": true,
+      "reports_and_jsonl_episodes_match": true,
+      "cpu_report_uses_production_backend": true,
+      "stable_report_uses_validated_policy": true
+    },
+    "cpu_report": "D:\\DL_code\\data\\crop_row_perception\\day71_device_parity\\production_cpu_cli_run\\pilot_report.json",
+    "stable_report": "D:\\DL_code\\data\\crop_row_perception\\day71_device_parity\\stable_cli_run\\pilot_report.json"
+  },
+  "acceptance_checks": {
+    "source_matches_day70_same_byte_video": true,
+    "decoded_exactly_89_frames": true,
+    "all_six_arms_completed": true,
+    "each_arm_repeat_exact": true,
+    "day70_37_status_mismatches_reproduced": true,
+    "day70_37_navigation_mismatches_reproduced": true,
+    "all_navigation_contracts_preserved": true,
+    "frozen_inputs_unchanged_during_run": true,
+    "diagnostic_factor_found": true,
+    "stable_cuda_matches_production_cpu_all_89_frames": true,
+    "instrumentation_matches_canonical_predictors": true,
+    "emitted_cpu_and_stable_cuda_jsonl_match_framewise": true,
+    "emitted_cli_artifacts_bound_to_validated_reports": true
+  },
+  "acceptance_status": "PASS",
+  "differences_csv": "D:\\opencv-learning\\71_crop_row_device_parity_diagnosis\\code\\day71_frame_differences.csv"
+}

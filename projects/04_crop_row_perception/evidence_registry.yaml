@@ -1,6 +1,6 @@
 schema_version: 1
 project_id: 04_crop_row_perception
-updated: 2026-09-11
+updated: 2026-09-12
 
 entries:
   - id: day59_target_contract_v2
@@ -170,6 +170,17 @@ entries:
     result: cpu_valid_39; cuda_valid_26; status_mismatch_37_frames; navigation_availability_mismatch_37_frames; both_navigation_contract_violations_0
     allowed_use: 说明当前运行结果依赖设备并要求复现实验显式固定CPU
     forbidden_use: 修改Day69冻结结果、将设备差异隐藏为可忽略波动，或将零导航泄漏等同真实安全
+
+  - id: day71_device_parity_diagnosis
+    role: development_reproducibility_diagnosis_and_execution_policy
+    status: ROOT_CAUSE_IDENTIFIED_DEVELOPMENT_PARITY_PASS
+    evidence: ../../71_crop_row_device_parity_diagnosis/code/day71_device_parity_result.json; ../../71_crop_row_device_parity_diagnosis/code/day71_notes.md
+    scope: same_byte_89_frame_shifted_development_video_current_rtx3050_torch2.5.1_cudnn9.1
+    result: day70_37_mismatches_reproduced; cudnn_tf32_path_identified; real_cpu_vs_stable_cuda_cli_0_status_and_0_navigation_mismatches; public_geometry_structure_equal_and_max_abs_difference_4.823e-06_with_1e-05_tolerance; all_arms_repeat_exact; all_navigation_contract_violations_0
+    stable_entrypoint: ../../71_crop_row_device_parity_diagnosis/code/run_crop_row_pilot_device_stable.py
+    allowed_use: 在当前环境复现Day70差异，并使用关闭cuDNN TF32的CUDA batch32策略运行开发期离线Pilot
+    forbidden_use: 声明概率逐位一致、所有视频或所有设备均一致、修改Day69冻结成绩、外部泛化、真实安全或机器人控制可靠性
+    github_upload: USER_APPROVED_PENDING_PUSH
 
   - id: day59_open_source_review
     role: background_reference
